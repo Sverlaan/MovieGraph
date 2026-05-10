@@ -72,7 +72,7 @@ def main():
     watchlists_df.to_csv(USERS_SOURCE / "watchlists.csv", index=False)
     users_df.to_csv(USERS_SOURCE / "users.csv", index=False)
     diary_df.to_csv(USERS_SOURCE / "diary.csv", index=False)
-    # trending_df.to_csv(USERS_SOURCE / "trending.csv", index=False)
+    # trending_df.to_csv(Path("etl/data/sources") / "trending.csv", index=False)
 
     all_user_slugs = set(ratings_df["slug"]).union(
         set(watchlists_df["slug"])

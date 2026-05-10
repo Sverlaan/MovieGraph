@@ -3,11 +3,13 @@ __pycache__/
 credentials.env
 .DS_Store
 *.egg-info/
+etl/data/sources/users/diary.csv
 etl/data/sources/movies.csv
 etl/data/sources/persons.csv
 etl/data/sources/users/ratings.csv
 etl/data/sources/users/users.csv
 etl/data/sources/users/watchlists.csv
+etl/data/sources/users/blacklists.csv
 etl/data/exports/
 etl/dummy_data/exports/
 etl/experiment.ipynb
