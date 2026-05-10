@@ -1,0 +1,34 @@
+sources:
+  movies:
+    type: sqlite
+    path: etl/dummy_data/sources/movies.db
+    table: movies_v5
+
+  people:
+    type: sqlite
+    path: etl/dummy_data/sources/movies.db
+    table: people_v5
+
+  oscars:
+    type: csv
+    path: etl/dummy_data/sources/oscars_filtered_by_movies.csv
+
+  users:
+    type: csv
+    path: etl/dummy_data/sources/users/users.csv
+
+  ratings:
+    type: csv
+    path: etl/dummy_data/sources/users/ratings_filtered_by_movies.csv
+
+  watchlists:
+    type: csv
+    path: etl/dummy_data/sources/users/watchlists_filtered_by_movies.csv
+
+  blacklists:
+    type: csv
+    path: etl/dummy_data/sources/users/blacklists.csv
+
+  diary:
+    type: csv
+    path: etl/dummy_data/sources/users/diary.csv

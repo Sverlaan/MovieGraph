@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moviegraph"
+version = "0.3.0"
+description = "MovieGraph monorepo: ETL, API, and more"
+requires-python = ">=3.13"
+dependencies = [
+    # API
+    "fastapi",
+    "uvicorn[standard]",
+    # Graph DB
+    "neo4j>=6.0",
+    # Data / ETL
+    "pandas>=2.0,<3.0",
+    "numpy",
+    "requests",
+    "beautifulsoup4",
+    "lxml",
+    "tqdm",
+    "PyYAML",
+    "python-dotenv",
+    # ML
+    "scikit-learn",
+    "scipy",
+    "numba",
+    # Visualization
+    "graphviz",
+    # AI / RAG
+    "openai",
+    # External (git) packages
+    "letterboxdpy @ git+https://github.com/nmcassa/letterboxdpy.git",
+    "matrix_factorization @ git+https://github.com/Quang-Vinh/matrix-factorization.git@e4398f500e002fc22f24c296f0bf1775c4e281a0",
+]
+
+[project.scripts]
+update-sources = "etl.scripts.update_sources:main"
+build-graph = "etl.scripts.build_graph:main"
+run-etl = "etl.scripts.run_etl:main"
+run-api = "app.main:main"
+
+[tool.setuptools.packages.find]
+include = ["etl*", "app*"]

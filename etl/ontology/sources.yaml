@@ -1,0 +1,34 @@
+sources:
+  movies:
+    type: sqlite
+    path: etl/data/sources/movies.db
+    table: movies_v5
+
+  people:
+    type: sqlite
+    path: etl/data/sources/movies.db
+    table: people_v5
+
+  oscars:
+    type: csv
+    path: etl/data/sources/oscars_normalized.csv
+
+  users:
+    type: csv
+    path: etl/data/sources/users/users.csv
+
+  ratings:
+    type: csv
+    path: etl/data/sources/users/ratings.csv
+
+  watchlists:
+    type: csv
+    path: etl/data/sources/users/watchlists.csv
+
+  blacklists:
+    type: csv
+    path: etl/data/sources/users/blacklists.csv
+
+  diary:
+    type: csv
+    path: etl/data/sources/users/diary.csv

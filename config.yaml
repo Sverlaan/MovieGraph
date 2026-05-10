@@ -1,0 +1,18 @@
+neo4j_env: "AURA"  # Options: LOCAL, AURA
+dummy_data: False
+
+dirs:
+  ontology: "etl/ontology"
+  sources: "etl/ontology/sources.yaml"
+  export: "data/exports"
+
+models:
+  llm: "gpt-4"
+  embeddings_model: "text-embedding-3-large"
+  mf_model_path: "etl/model/kernel_mf.pkl"
+
+users:
+  usernames:
+    - "sverlaan"
+    - "flrz"
+    - "liannehr"

@@ -1,0 +1,312 @@
+mappings:
+
+  - node: Movie
+    source: movies
+    transformations:
+      - preprocess_movies
+    columns:
+      slug: slug
+      title: title
+      release_date: release_date
+      release_year: release_year
+      rating: lb_rating
+      watchers: lb_watchers
+      runtime: runtime
+      budget: budget
+      revenue: revenue
+      plot: overview
+      tagline: tagline
+      poster: lb_poster
+      banner: lb_banner
+      trailer: lb_trailer
+      original_language: original_language
+      popularity: popularity
+      status: status
+      homepage: homepage
+      letterboxd_url: lb_letterboxd_url
+      imdb_url: lb_imdb_url
+      tmdb_url: lb_tmdb_url
+      letterboxd_id: lb_letterboxd_id
+      imdb_id: imdb_id
+      tmdb_id: tmdb_id
+
+  - node: Person
+    source: people
+    transformations:
+      - preprocess_people
+    columns:
+      tmdb_id: id
+      name: name
+      biography: biography
+      birthday: birthday
+      deathday: deathday
+      place_of_birth: place_of_birth
+      picture: profile_path
+      popularity: popularity
+      gender: gender
+      known_for_department: known_for_department
+      homepage: homepage
+      imdb_id: imdb_id
+
+  - node: User
+    source: users
+    columns:
+      username: username
+      display_name: display_name
+      avatar: avatar
+      url: url
+
+  - node: Genre
+    source: movies
+    transformations:
+      - explode_json:
+          column: genres
+          id_column: tmdb_id
+    columns:
+      id: id
+      name: name
+
+  - node: Theme
+    source: movies
+    transformations:
+      - explode_json:
+          column: lb_themes
+          id_column: tmdb_id
+    columns:
+      name: name
+
+  - node: MiniTheme
+    source: movies
+    transformations:
+      - explode_json:
+          column: lb_mini_themes
+          id_column: tmdb_id
+    columns:
+      name: name
+
+  - node: Collection
+    source: movies
+    transformations:
+      - explode_json:
+          column: belongs_to_collection
+          id_column: tmdb_id
+    columns:
+      id: id
+      name: name
+      poster: poster_path
+      backdrop: backdrop_path
+
+  - node: Studio
+    source: movies
+    transformations:
+      - explode_json:
+          column: production_companies
+          id_column: tmdb_id
+    columns:
+      id: id
+      name: name
+      logo_path: logo_path
+      origin_country: origin_country
+
+  - node: Country
+    source: movies
+    transformations:
+      - explode_json:
+          column: production_countries
+          id_column: tmdb_id
+    columns:
+      iso_3166_1: iso_3166_1
+      name: name
+
+  - node: Language
+    source: movies
+    transformations:
+      - explode_json:
+          column: spoken_languages
+          id_column: tmdb_id
+    columns:
+      iso_639_1: iso_639_1
+      name: name
+      english_name: english_name
+
+  - node: Keyword
+    source: movies
+    transformations:
+      - explode_json:
+          column: keywords
+          id_column: tmdb_id
+    columns:
+      id: id
+      name: name
+
+  - node: OscarNom
+    source: oscars
+    columns:
+      id: NomId
+      ceremony: Ceremony
+      year: Year
+      canonical_category: CanonicalCategory
+      category: Category
+      winner: Winner
+      detail: Detail
+      note: Note
+      citation: Citation
+
+
+
+
+
+  - edge: ACTED_IN
+    source: movies
+    transformations:
+      - explode_json:
+          column: cast
+          id_column: slug
+    columns:
+      tmdb_id: id
+      slug: slug
+      character: character
+      billing_order: order
+
+  - edge: WORKED_ON
+    source: movies
+    transformations:
+      - explode_json:
+          column: crew
+          id_column: slug
+    columns:
+      tmdb_id: id
+      slug: slug
+      job: job
+      department: department
+
+  - edge: HAS_GENRE
+    source: movies
+    transformations:
+      - explode_json:
+          column: genres
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id  
+      id: id            
+
+  - edge: HAS_THEME
+    source: movies
+    transformations:
+      - explode_json:
+          column: lb_themes
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id   
+      name: name        
+
+  - edge: HAS_MINI_THEME
+    source: movies
+    transformations:
+      - explode_json:
+          column: lb_mini_themes
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id   
+      name: name   
+
+  - edge: BELONGS_TO_COLLECTION
+    source: movies
+    transformations:
+      - explode_json:
+          column: belongs_to_collection
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id   
+      id: id    
+
+  - edge: PRODUCED_BY
+    source: movies
+    transformations:
+      - explode_json:
+          column: production_companies
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id   
+      id: id             
+
+  - edge: PRODUCED_IN
+    source: movies
+    transformations:
+      - explode_json:
+          column: production_countries
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id
+      iso_3166_1: iso_3166_1
+
+  - edge: SPOKEN_IN
+    source: movies
+    transformations:
+      - explode_json:
+          column: spoken_languages
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id
+      iso_639_1: iso_639_1
+
+  - edge: HAS_KEYWORD
+    source: movies
+    transformations:
+      - explode_json:
+          column: keywords
+          id_column: tmdb_id
+    columns:
+      tmdb_id: tmdb_id
+      id: id
+
+  - edge: NOMINATED_MOVIE
+    source: oscars
+    columns:
+      id: NomId
+      imdb_id: FilmId
+
+  - edge: NOMINATED_PERSON
+    source: oscars
+    transformations:
+      - explode_json:
+          column: NomineeIds
+          id_column: NomId
+    columns:
+      id: NomId
+      imdb_id: imdb_id
+
+  - edge: RATED
+    source: ratings
+    columns:
+      username: username
+      slug: slug
+      rating: rating
+      liked: liked
+
+  - edge: WATCHLISTED
+    source: watchlists
+    columns:
+      username: username
+      slug: slug
+
+  - edge: BLACKLISTED
+    source: blacklists
+    columns:
+      username: username
+      slug: slug
+
+  - edge: LOGGED
+    source: diary
+    columns:
+      username: username
+      slug: slug
+      entry_id: entry_id
+      name: name
+      rewatched: rewatched
+      rating: rating
+      liked: liked
+      reviewed: reviewed
+      date: date
+      page_url: page_url
+      page_no: page_no
