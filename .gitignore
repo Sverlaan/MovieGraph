@@ -9,6 +9,7 @@ etl/data/sources/persons.csv
 etl/data/sources/users/ratings.csv
 etl/data/sources/users/users.csv
 etl/data/sources/users/watchlists.csv
+etl/data/sources/movies_with_plot_embeddings kopie.csv
 etl/data/exports/
 etl/dummy_data/exports/
 etl/experiment.ipynb

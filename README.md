@@ -22,7 +22,8 @@ Create and activate a virtual environment, then install the package and all depe
 ```bash
 python3.13 -m venv .venv
 source .venv/bin/activate
-pip install -e . --config-settings editable_mode=compat
+pip install --upgrade pip
+pip install -e .
 ```
 
 Create a `credentials.env` file in the project root with the following keys:

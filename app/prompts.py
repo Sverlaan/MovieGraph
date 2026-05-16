@@ -20,6 +20,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - LIMIT 25 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
     - For selecting movies that a user has seen, use the RATED edge
     - For general ratings of a movie, use the rating property on the Movie node
+    - When being asked about movies on a specific topic or subject, use Keyword nodes and return results that have the most matches. For example, if the question is "What are some movies about space exploration?", match keywords like "space", "astronaut", "nasa", etc. and return results that have the most matches across those keywords. So you should count the number of matched keywords for each movie and return results ordered by that count, not just a simple match on either.
     - CRITICAL: When a query returns details about a SINGLE movie (movie_detail), use pattern comprehensions in the RETURN clause for all simple name/property collections. This avoids Cartesian products and is more efficient than one CALL per relationship type. Only use CALL {{}} subqueries when you need ORDER BY (e.g. cast sorted by billing_order) or multi-property maps that cannot be expressed inline.
       Correct movie_detail pattern (use this):
         MATCH (m:Movie)

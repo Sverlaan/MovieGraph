@@ -38,11 +38,15 @@ ACTORS = [
     "Charlize Theron", "Natalie Portman", "Ryan Gosling", "Amy Adams",
 ]
 
+STUDIOS = ["Pixar", "Studio Ghibli", "A24"]
+
 GENRES = [
     "Thriller", "Comedy", "Science Fiction", "Drama", "Horror",
     "Action", "Romance", "Animation", "Crime",
     "Fantasy", "Mystery",
 ]
+
+THEMES = ["time travel", "space exploration", "coming of age", "loss of a loved one", "prison escape"]
 
 YEARS = [str(y) for y in range(2000, 2025)]
 DECADES = [f"{decade}s" for decade in range(1960, 2025, 10)]
@@ -57,34 +61,35 @@ USERS = ["sverlaan", "flrz", "liannehr"]
 # ─── Question templates ────────────────────────────────────────────────────────
 
 QUESTION_TEMPLATES = [
-    "Give me an overview of the movie {MOVIE}",
-    "What is the cast of {MOVIE}?",
-    "What is the crew of {MOVIE}?",
-    "What are the highest rated movies from {YEAR}?",
-    "What are the highest rated {GENRE} movies from the {DECADE}?",
-    "What are the highest rated movies from {COUNTRY}?",
-    "What are the highest rated {GENRE} movies from {COUNTRY}?",
-    "Show me all movies from Studio Ghibli",
+    "Overview of {MOVIE}",
+    "Cast of {MOVIE}",
+    "Crew of {MOVIE}",
+    "Movies about {THEME}",
+    "Highest rated movies from {YEAR}",
+    "Highest rated {GENRE} movies from the {DECADE}",
+    "Highest rated movies from {COUNTRY}",
+    "Highest rated {GENRE} movies from {COUNTRY}",
+    "Movies from {STUDIO}",
     "What actors acted in the most movies?",
-    "Show me the full filmography of {PERSON}",
+    "Filmography of {PERSON}",
     "Who has collaborated with {PERSON}, sorted by the number of collaborations",
-    "What movies are directed by {DIRECTOR} and star {ACTOR}?",
-    "What are the five highest rated movies from {PERSON}?",
-    "What movies are similar to {MOVIE}?",
-    "What movies are from the same director as {MOVIE}?",
+    "Movies directed by {DIRECTOR} and star {ACTOR}",
+    "Highest rated movies from {PERSON}",
+    "Movies similar to {MOVIE}",
+    "Movies from the same director as {MOVIE}",
     "What movies have a shared cast (min two people) with {MOVIE} and who are they?",
     "What movies have most similar Mini-Themes to {MOVIE} and what are they?",
-    "Show me the watchlist of {USER}, sorted by release date",
-    "What {GENRE} movies would you recommend to {USER}?",
-    "Show the 5 star rated movies by {USER}",
-    "Show the worst rated movies by {USER} and their rating",
+    "Watchlist of {USER}, sorted by release date",
+    "Recommend {GENRE} movies to {USER}",
+    "Five star rated movies by {USER}",
+    "Worst rated movies by {USER}",
     "What movies similar to {MOVIE} has {USER} not seen yet?",
     "What movies that star {PERSON} has {USER} seen?",
     "What movies watched by {USER} would you recommend to {USER}?",
-    "What movies are in the watchlists of both {USER} and {USER}?",
+    "Movies in the watchlists of both {USER} and {USER}",
     "What 10 movies would you recommend to {USER} and {USER} together?",
-    "What is the shortest path between {PERSON} and {PERSON}?",
-    "What is the shortest path between {MOVIE} and {MOVIE}?",
+    "Shortest path between {PERSON} and {PERSON}",
+    "Shortest path between {MOVIE} and {MOVIE}",
 ]
 
 # ─── Fill logic ────────────────────────────────────────────────────────────────
@@ -113,6 +118,8 @@ def _fill_template(template: str) -> str:
         "{YEAR}": YEARS,
         "{COUNTRY}": COUNTRIES,
         "{DECADE}": DECADES,
+        "{THEME}": THEMES,
+        "{STUDIO}": STUDIOS,
     }
     for placeholder, pool in replacements.items():
         if placeholder in result:
