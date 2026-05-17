@@ -46,7 +46,7 @@ GENRES = [
     "Fantasy", "Mystery",
 ]
 
-THEMES = ["time travel", "space exploration", "coming of age", "loss of a loved one", "prison escape"]
+THEMES = ["time travel", "space exploration", "coming of age", "loss of a loved one", "prison escape", "vampires", "zombies", "artificial intelligence"]
 
 YEARS = [str(y) for y in range(2000, 2025)]
 DECADES = [f"{decade}s" for decade in range(1960, 2025, 10)]
