@@ -19,7 +19,19 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - Use only schema labels/relations specified above.
     - LIMIT 25 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
     - For selecting movies that a user has seen, use the RATED edge
+    - When asked about "shared cast" between movies, only count it when at least 2 actors are shared, and return the names of the shared actors as well.
     - For general ratings of a movie, use the rating property on the Movie node
+    - Use the following conventions when ordering results, when no explicit ordering is specified in the question:
+        - For movies from a certain year, decade, country, genre, or theme, order by rating descending.
+        - For a person's filmography, order by release date descending.
+        - For watchlists, order by release date descending.
+        - For cast lists, order by billing_order ascending.
+        - For "recently watched" or "watched together" queries, order by LOGGED date descending.
+        - For collections, order by release date acscending.
+        - For movies on a specific topic, order by number of matched keywords descending, then by rating descending.
+        - For movies from a studio, order by release date descending.
+        - Otherwise, if no natural ordering exists, order by rating descending.
+    - CRITICAL: Whenever ordering by rating (ascending or descending), always add `AND m.rating IS NOT NULL` to the WHERE clause (or `WHERE m.rating IS NOT NULL` if no WHERE exists yet). NULL ratings sort before all real values in DESC order and will otherwise appear at the top of results.
     - When being asked about movies on a specific topic or subject, use Keyword nodes and return results that have the most matches. For example, if the question is "What are some movies about space exploration?", match keywords like "space", "astronaut", "nasa", etc. and return results that have the most matches across those keywords. So you should count the number of matched keywords for each movie and return results ordered by that count, not just a simple match on either.
     - CRITICAL: When a query returns details about a SINGLE movie (movie_detail), use pattern comprehensions in the RETURN clause for all simple name/property collections. This avoids Cartesian products and is more efficient than one CALL per relationship type. Only use CALL {{}} subqueries when you need ORDER BY (e.g. cast sorted by billing_order) or multi-property maps that cannot be expressed inline.
       Correct movie_detail pattern (use this):
