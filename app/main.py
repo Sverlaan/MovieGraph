@@ -20,10 +20,16 @@ def root():
 
 @app.get("/api/examples", include_in_schema=False)
 def examples():
-    return get_random_examples()
+    return get_random_examples(n=8)
+
+
+@app.get("/catalogue", include_in_schema=False)
+def catalogue():
+    return RedirectResponse(url="/ui-catalogue/index.html")
 
 
 app.mount("/ui", StaticFiles(directory="ui"), name="ui")
+app.mount("/ui-catalogue", StaticFiles(directory="ui-catalogue"), name="ui-catalogue")
 
 
 def main():

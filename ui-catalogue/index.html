@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MovieGraph</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Top-left logo -->
+  <header class="site-header">
+    <a class="logo-link" href="/">
+      <svg width="32" height="32" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="14" width="40" height="24" fill="#0a0a0a"/>
+        <rect x="9"  y="17" width="5" height="4" fill="#fafaf9"/>
+        <rect x="9"  y="24" width="5" height="4" fill="#fafaf9"/>
+        <rect x="9"  y="31" width="5" height="4" fill="#fafaf9"/>
+        <rect x="38" y="17" width="5" height="4" fill="#fafaf9"/>
+        <rect x="38" y="24" width="5" height="4" fill="#fafaf9"/>
+        <rect x="38" y="31" width="5" height="4" fill="#fafaf9"/>
+        <circle cx="26" cy="26" r="4.5" fill="#fafaf9"/>
+        <circle cx="19" cy="21" r="3" fill="#fafaf9" opacity="0.5"/>
+        <circle cx="33" cy="21" r="3" fill="#fafaf9" opacity="0.5"/>
+        <line x1="26" y1="26" x2="19" y2="21" stroke="#fafaf9" stroke-width="1.5"/>
+        <line x1="26" y1="26" x2="33" y2="21" stroke="#fafaf9" stroke-width="1.5"/>
+      </svg>
+      <span class="logo-text">MovieGraph</span>
+    </a>
+  </header>
+
+  <!-- Main content -->
+  <main class="main-area">
+
+    <!-- Search -->
+    <section class="search-section">
+      <input
+        id="question-input"
+        type="text"
+        placeholder="What do you want to find?"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div id="examples" class="examples"></div>
+    </section>
+
+    <!-- View toggle (shown after first response) -->
+    <div id="view-toggle" class="view-toggle" style="display:none">
+      <button id="btn-output" class="toggle-btn active">Output</button>
+      <span class="toggle-sep">/</span>
+      <button id="btn-graph" class="toggle-btn">Graph</button>
+    </div>
+
+    <!-- Output view -->
+    <section id="output-view" class="output-view" style="display:none">
+
+      <div id="loading" class="loading" style="display:none">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p>Analyzing</p>
+      </div>
+
+      <div id="answer-text" class="answer-text"></div>
+      <div id="query-tags" class="query-tags"></div>
+
+      <hr id="results-divider" class="results-divider" style="display:none" />
+
+      <div id="movie-grid"    style="display:none"></div>
+      <div id="person-grid"   style="display:none"></div>
+      <div id="movie-detail"  class="movie-detail-card" style="display:none"></div>
+      <div id="person-detail" class="person-detail-card" style="display:none"></div>
+
+    </section>
+
+    <!-- Graph view -->
+    <section id="graph-view" class="graph-view" style="display:none">
+      <div id="graph-container">
+        <div id="graph-legend"></div>
+        <div id="graph-controls">
+          <button class="graph-ctrl-btn" id="btn-zoom-in">+</button>
+          <button class="graph-ctrl-btn" id="btn-zoom-out">−</button>
+          <button class="graph-ctrl-btn" id="btn-zoom-fit">FIT</button>
+        </div>
+      </div>
+      <div class="cypher-section">
+        <div class="cypher-label">Cypher Query</div>
+        <pre id="cypher-code" class="cypher-code"></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>

@@ -17,7 +17,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - No markdown
     - No explanation
     - Use only schema labels/relations specified above.
-    - LIMIT 25 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
+    - LIMIT 24 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
     - Always use DISTINCT to avoid duplicates, unless the question explicitly asks for duplicates.
     - For selecting movies that a user has seen, use the RATED edge
     - When asked about "shared cast" between movies, only count it when at least 2 actors are shared, and return the names of the shared actors as well.
@@ -39,9 +39,9 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
           AND m.rating IS NOT NULL
         WITH m, count(DISTINCT k) AS matched_keywords
         WHERE matched_keywords >= 2
-        RETURN m.title AS title, m.release_year AS year, m.poster AS poster, m.slug AS slug, m.rating AS rating, matched_keywords
+        RETURN m.title AS title, m.release_year AS year, m.poster AS poster, m.banner AS banner, m.slug AS slug, m.rating AS rating, matched_keywords
         ORDER BY matched_keywords DESC, m.rating DESC
-        LIMIT 25
+        LIMIT 24
     - CRITICAL: When a query returns details about a SINGLE movie (movie_detail), use pattern comprehensions in the RETURN clause for all simple name/property collections. This avoids Cartesian products and is more efficient than one CALL per relationship type. Only use CALL {{}} subqueries when you need ORDER BY (e.g. cast sorted by billing_order) or multi-property maps that cannot be expressed inline.
       Correct movie_detail pattern (use this):
         MATCH (m:Movie)
@@ -74,7 +74,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
         MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {{slug: "inception"}})
         RETURN p.name AS name, p.picture AS avatar, r.character AS character
         ORDER BY r.billing_order ASC
-        LIMIT 25
+        LIMIT 24
       Wrong person_list pattern (never do this):
         MATCH (m:Movie {{slug: "inception"}})
         CALL {{ WITH m MATCH (m)<-[:ACTED_IN]-(p:Person) RETURN collect({{name: p.name}}) AS cast }}
@@ -102,7 +102,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - When matching a specific movie by name, use a case-insensitive title match rather than exact slug lookup, since the user may not know the slug: `WHERE toLower(m.title) = toLower("Spirited Away")`. Do NOT match by slug unless the slug was explicitly provided.
 
     Output format rules (for UI rendering):
-    - When returning a list of movies, always include these aliases in RETURN: title, year, poster, slug. Add extra relevant fields (e.g. rating, character, movie_count) after.
+    - When returning a list of movies, always include these aliases in RETURN: title, year, poster, banner, slug. Add extra relevant fields (e.g. rating, character, movie_count) after.
     - When returning a list of persons, always include these aliases in RETURN: name, avatar, Add extra relevant fields (e.g. movie_count, collaborations, character) after.
     - When returning details about a single movie, always include: title, year, poster, banner, rating, runtime, plot, slug as aliases. Add other relevant fields after.
     """

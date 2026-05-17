@@ -1,4 +1,4 @@
-neo4j_env: "AURA"  # Options: LOCAL, AURA
+neo4j_env: "LOCAL"  # Options: LOCAL, AURA
 dummy_data: False
 
 dirs:
@@ -16,3 +16,4 @@ users:
     - "sverlaan"
     - "flrz"
     - "liannehr"
+    - "pienverduin"
