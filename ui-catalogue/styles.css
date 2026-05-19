@@ -147,6 +147,14 @@ html, body {
   gap: 1.25rem;
 }
 
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.card-reveal {
+  animation: cardReveal 0.45s ease both;
+}
+
 /* Loading */
 .loading { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0; }
 .loading-dots { display: flex; gap: 5px; }

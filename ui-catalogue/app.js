@@ -109,10 +109,12 @@ function hideAll() {
   for (const el of [movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
     el.style.display = "none";
     el.style.visibility = "";
+    el.classList.remove("card-reveal");
     el.innerHTML = "";
   }
   queryTagsEl.innerHTML = "";
   queryTagsEl.style.visibility = "";
+  queryTagsEl.classList.remove("card-reveal");
   dividerEl.style.display = "none";
   dividerEl.style.visibility = "";
   cypherCode.innerHTML = "";
@@ -147,12 +149,11 @@ async function renderResponse(data) {
 
   await showAnswer(answer);
 
-  // Reveal the card grid now that the animation is done
-  queryTagsEl.style.visibility    = "";
-  movieGridEl.style.visibility    = "";
-  personGridEl.style.visibility   = "";
-  movieDetailEl.style.visibility  = "";
-  personDetailEl.style.visibility = "";
+  // Reveal the card grid with a fade-up animation
+  for (const el of [queryTagsEl, movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
+    el.style.visibility = "";
+    el.classList.add("card-reveal");
+  }
 
   if (hasGraph) renderGraph(graph);
   if (cypher)   cypherCode.innerHTML = highlightCypher(escHtml(cypher));
