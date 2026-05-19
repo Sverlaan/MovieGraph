@@ -96,6 +96,7 @@ function setLoading(on) {
   outputView.style.display = "flex";
   graphView.style.display  = "none";
   viewToggle.style.display = "none";
+  viewToggle.style.visibility = "";
   loadingEl.style.display  = on ? "flex" : "none";
   if (on) {
     answerEl.textContent = "";
@@ -107,10 +108,13 @@ function setLoading(on) {
 function hideAll() {
   for (const el of [movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
     el.style.display = "none";
+    el.style.visibility = "";
     el.innerHTML = "";
   }
   queryTagsEl.innerHTML = "";
+  queryTagsEl.style.visibility = "";
   dividerEl.style.display = "none";
+  dividerEl.style.visibility = "";
   cypherCode.innerHTML = "";
 }
 
@@ -120,25 +124,38 @@ function hideAll() {
 async function renderResponse(data) {
   const { answer, result_type, results, graph, cypher, query_tags } = data;
 
+  const hasCards       = ["movie_list","person_list","movie_detail"].includes(result_type);
+  const hasGraph       = graph && graph.nodes && graph.nodes.length > 0;
+  const willHaveToggle = hasGraph || !!cypher;
+
   showView("output");
-  await showAnswer(answer);
 
-  if (query_tags && query_tags.length > 0) renderQueryTags(query_tags);
-
-  const hasCards = ["movie_list","person_list","movie_detail"].includes(result_type);
-  const hasGraph = graph && graph.nodes && graph.nodes.length > 0;
-
+  // Pre-render everything below the answer text BEFORE animating so the
+  // layout is fully stable and the text doesn't jump when content appears.
+  if (query_tags && query_tags.length > 0) {
+    renderQueryTags(query_tags);
+    queryTagsEl.style.visibility = "hidden";
+  }
   if (hasCards) {
     dividerEl.style.display = "block";
-    if (result_type === "movie_list")   renderMovieGrid(results);
-    if (result_type === "person_list")  results.length === 1 ? renderPersonDetail(results[0]) : renderPersonGrid(results);
-    if (result_type === "movie_detail") renderMovieDetail(results[0]);
+    if (result_type === "movie_list")   { renderMovieGrid(results);   movieGridEl.style.visibility    = "hidden"; }
+    if (result_type === "person_list")  { results.length === 1 ? renderPersonDetail(results[0]) : renderPersonGrid(results);
+                                          personDetailEl.style.visibility = "hidden"; personGridEl.style.visibility = "hidden"; }
+    if (result_type === "movie_detail") { renderMovieDetail(results[0]); movieDetailEl.style.visibility = "hidden"; }
   }
+  if (willHaveToggle) viewToggle.style.display = "flex";
+
+  await showAnswer(answer);
+
+  // Reveal the card grid now that the animation is done
+  queryTagsEl.style.visibility    = "";
+  movieGridEl.style.visibility    = "";
+  personGridEl.style.visibility   = "";
+  movieDetailEl.style.visibility  = "";
+  personDetailEl.style.visibility = "";
 
   if (hasGraph) renderGraph(graph);
   if (cypher)   cypherCode.innerHTML = highlightCypher(escHtml(cypher));
-
-  if (hasGraph || cypher) viewToggle.style.display = "flex";
 }
 
 // ═══════════════════════════════════════════════════════════
