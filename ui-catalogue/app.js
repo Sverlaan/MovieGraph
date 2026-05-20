@@ -127,7 +127,7 @@ function hideAll() {
 async function renderResponse(data) {
   const { answer, result_type, results, graph, cypher, query_tags } = data;
 
-  const hasCards       = ["movie_list","person_list","movie_detail"].includes(result_type);
+  const hasCards       = ["movie_list","person_list"].includes(result_type);
   const hasGraph       = graph && graph.nodes && graph.nodes.length > 0;
   const willHaveToggle = hasGraph || !!cypher;
 
@@ -144,14 +144,13 @@ async function renderResponse(data) {
     if (result_type === "movie_list")   { renderMovieGrid(results);   movieGridEl.style.visibility    = "hidden"; }
     if (result_type === "person_list")  { results.length === 1 ? renderPersonDetail(results[0]) : renderPersonGrid(results);
                                           personDetailEl.style.visibility = "hidden"; personGridEl.style.visibility = "hidden"; }
-    if (result_type === "movie_detail") { renderMovieDetail(results[0]); movieDetailEl.style.visibility = "hidden"; }
   }
   if (willHaveToggle) viewToggle.style.display = "flex";
 
   await showAnswer(answer);
 
   // Reveal the card grid with a fade-up animation
-  for (const el of [queryTagsEl, movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
+  for (const el of [queryTagsEl, movieGridEl, personGridEl, personDetailEl]) {
     el.style.visibility = "";
     el.classList.add("card-reveal");
   }
@@ -201,10 +200,6 @@ function renderQueryTags(tags) {
 const MOVIE_PRIMARY  = new Set(["title","year","poster","slug","banner","rating"]);
 const PERSON_PRIMARY = new Set(["name","avatar","picture","person_slug"]);
 const PERSON_DETAIL_PRIMARY = new Set(["name","avatar","picture","person_slug","biography"]);
-const MOVIE_DETAIL_PRIMARY  = new Set([
-  "title","year","poster","slug","rating","runtime","plot","tagline",
-  "banner","trailer","imdb_url","letterboxd_url","tmdb_url"
-]);
 
 function renderMovieGrid(results) {
   movieGridEl.innerHTML = "";
@@ -213,9 +208,6 @@ function renderMovieGrid(results) {
     const card = document.createElement("div");
     card.className = "movie-banner-card";
     const imgSrc = movie.banner || movie.poster;
-    const extra = extraFields(movie, MOVIE_PRIMARY)
-      .filter(f => typeof f.value !== "object")
-      .slice(0, 2);
     card.innerHTML = `
       ${imgSrc
         ? `<img class="banner-img" src="${escHtml(imgSrc)}" alt="" onerror="this.style.display='none'" />`
@@ -223,7 +215,6 @@ function renderMovieGrid(results) {
       <div class="banner-info">
         <div class="banner-title">${escHtml(movie.title || "—")}</div>
         ${movie.year ? `<div class="banner-year">${movie.year}</div>` : ""}
-        ${extra.length ? `<div class="banner-meta">${extra.map(f => escHtml(String(f.value))).join("  ·  ")}</div>` : ""}
       </div>`;
     card.addEventListener("click", () => {
       const saved = {
@@ -238,7 +229,7 @@ function renderMovieGrid(results) {
       dividerEl.style.display   = "none";
       viewToggle.style.display  = "none";
       window.scrollTo({ top: 0, behavior: "smooth" });
-      renderMovieDetail(movie, /* fromGrid */ true, () => {
+      renderMovieDetail(movie, () => {
         answerEl.style.display    = saved.answer;
         queryTagsEl.style.display = saved.tags;
         dividerEl.style.display   = saved.divider;
@@ -298,77 +289,42 @@ const TAG_TYPE_CLASS = {
   oscar_noms:  "oscarnom",
 };
 
-function renderMovieDetail(movie, fromGrid = false, onBack = null) {
+function renderMovieDetail(movie, onBack = null) {
   movieDetailEl.style.display = "flex";
-  movieDetailEl.classList.toggle("expanded", fromGrid);
+  movieDetailEl.classList.add("expanded");
   const year      = movie.year    ? ` (${movie.year})` : "";
   const rating    = movie.rating  ? `★ ${Number(movie.rating).toFixed(1)}` : "";
   const runtime   = movie.runtime ? `${movie.runtime} min` : "";
   const metaParts = [rating, runtime].filter(Boolean);
-  const tags = Object.entries(movie)
-    .filter(([, v]) => Array.isArray(v))
-    .flatMap(([k, v]) => v
-      .map(t => (t && typeof t === "object") ? (t.name || t.title || Object.values(t)[0]) : t)
-      .filter(t => t !== null && t !== undefined && String(t) !== "[object Object]")
-      .map(t => ({ text: String(t), cls: TAG_TYPE_CLASS[k] || "" }))
-    )
-    .slice(0, 14);
-  const links = [];
-  if (movie.imdb_url)       links.push(`<a href="${movie.imdb_url}" target="_blank">IMDb</a>`);
-  if (movie.letterboxd_url) links.push(`<a href="${movie.letterboxd_url}" target="_blank">Letterboxd</a>`);
-
-  if (fromGrid) {
-    movieDetailEl.innerHTML = `
-      <div class="detail-hero">
-        <div class="detail-banner-wrap">
-          ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
-        </div>
-        <button class="detail-back-btn" id="detail-back">← Back</button>
-        <div class="detail-content">
-          ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
-          <div class="detail-body" id="detail-overlay-body">
-            <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
-            ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
-            ${movie.tagline ? `<div style="font-style:italic;color:#aaa;font-size:.84rem">${escHtml(movie.tagline)}</div>` : ""}
-            ${movie.plot    ? `<div class="detail-plot">${escHtml(movie.plot)}</div>` : ""}
-            ${links.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${links.join(" · ")}</div>` : ""}
-          </div>
-        </div>
-      </div>
-      <div class="detail-info-section" id="detail-info-section" style="display:none"></div>`;
-
-    if (movie.slug) {
-      fetch(`/api/movie/${encodeURIComponent(movie.slug)}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data) fillMovieDetail(data); })
-        .catch(() => {});
-    }
-  } else {
-    movieDetailEl.innerHTML = `
+  movieDetailEl.innerHTML = `
+    <div class="detail-hero">
       <div class="detail-banner-wrap">
         ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
       </div>
+      <button class="detail-back-btn" id="detail-back">← Back</button>
       <div class="detail-content">
         ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
-        <div class="detail-body">
+        <div class="detail-body" id="detail-overlay-body">
           <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
           ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
-          ${movie.tagline ? `<div style="font-style:italic;color:#777;font-size:.84rem">${escHtml(movie.tagline)}</div>` : ""}
-          ${movie.plot    ? `<div class="detail-plot">${escHtml(movie.plot)}</div>` : ""}
-          ${links.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${links.join(" · ")}</div>` : ""}
         </div>
       </div>
-      ${tags.length ? `<div class="detail-tags">${tags.map(({text}) => `<span class="detail-tag">${escHtml(text)}</span>`).join("")}</div>` : ""}`;
+    </div>
+    <div class="detail-info-section" id="detail-info-section" style="display:none"></div>`;
+
+  if (movie.slug) {
+    fetch(`/api/movie/${encodeURIComponent(movie.slug)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) fillMovieDetail(data); })
+      .catch(() => {});
   }
 
-  if (fromGrid) {
-    document.getElementById("detail-back").addEventListener("click", () => {
-      movieDetailEl.style.display = "none";
-      movieDetailEl.classList.remove("expanded");
-      movieGridEl.style.display = "grid";
-      if (onBack) onBack();
-    });
-  }
+  document.getElementById("detail-back").addEventListener("click", () => {
+    movieDetailEl.style.display = "none";
+    movieDetailEl.classList.remove("expanded");
+    movieGridEl.style.display = "grid";
+    if (onBack) onBack();
+  });
 }
 
 function infoRow(label, value) {

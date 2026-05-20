@@ -275,30 +275,13 @@ def _extract_cypher_node_filters(cypher: str) -> list:
     return out
 
 
-def _graph_fallback_movie_detail(slug: str, nodes: dict, rels: dict):
-    _graph_query(
-        "MATCH (m:Movie {slug: $slug})-[r]->(n) "
-        "WHERE NOT n:Keyword AND NOT n:MiniTheme RETURN m, r, n LIMIT 60",
-        {"slug": slug}, nodes, rels)
-    _graph_query(
-        "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {slug: $slug}) "
-        "RETURN p, r, m ORDER BY r.billing_order ASC LIMIT 8",
-        {"slug": slug}, nodes, rels)
-    _graph_query(
-        "MATCH (p:Person)-[r:WORKED_ON]->(m:Movie {slug: $slug}) "
-        "WHERE r.job = 'Director' RETURN p, r, m",
-        {"slug": slug}, nodes, rels)
-
-
 def build_graph(cypher: str, results: list, result_type: str) -> dict:  # noqa: C901
     """Build a graph that shows exactly the nodes/edges matching the query results.
 
-    Strategy:
-    1. For movie_detail, use targeted queries (connected nodes not in flat results).
-    2. For all other types, collect entity identifiers from the flat results AND
-       from any inline {key: 'value'} literals in the Cypher itself (to capture
-       entities like users that don't appear as their own result rows).
-       Fetch those exact nodes, then fill only the edges that exist between them.
+    Collect entity identifiers from the flat results AND from any inline
+    {key: 'value'} literals in the Cypher itself (to capture entities like
+    users that don't appear as their own result rows).
+    Fetch those exact nodes, then fill only the edges that exist between them.
     """
     nodes: dict = {}
     rels: dict = {}
@@ -306,12 +289,6 @@ def build_graph(cypher: str, results: list, result_type: str) -> dict:  # noqa: 
     # Shortest-path queries return Path objects; re-run and extract directly
     if re.search(r'\bshortestPath\b|\ballShortestPaths\b', cypher, re.IGNORECASE):
         _graph_query(cypher, {}, nodes, rels)
-        return {"nodes": list(nodes.values()), "edges": list(rels.values())}
-
-    if result_type == "movie_detail":
-        slug = results[0].get("slug") if results else None
-        if slug:
-            _graph_fallback_movie_detail(slug, nodes, rels)
         return {"nodes": list(nodes.values()), "edges": list(rels.values())}
 
     # --- Collect entity IDs from results ---
@@ -416,15 +393,9 @@ def detect_result_type(results):
     first = results[0]
     keys = set(first.keys())
 
-    # Single movie with detail fields
-    if len(results) == 1 and "poster" in keys and ("plot" in keys or "banner" in keys):
-        return "movie_detail"
-
-    # List of movies
     if "poster" in keys and "title" in keys:
         return "movie_list"
 
-    # List of persons
     if "avatar" in keys or "picture" in keys:
         return "person_list"
 
