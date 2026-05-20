@@ -34,7 +34,7 @@ app.mount("/ui-catalogue", StaticFiles(directory="ui-catalogue"), name="ui-catal
 
 def main():
     import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=["app"])
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=["app", "ui-catalogue"])
 
 
 if __name__ == "__main__":

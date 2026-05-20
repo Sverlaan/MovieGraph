@@ -464,6 +464,71 @@ html, body {
 .cypher-lbl { color: #aaa; }
 .cypher-str { color: #888; }
 
+/* ─── Movie banner card — clickable ──────────────────────── */
+.movie-banner-card { cursor: pointer; }
+
+/* ─── Movie detail card — expanded (from grid click) ─────── */
+.movie-detail-card.expanded { border: none; }
+
+/* Let the banner image sit in flow so its natural height sets the card height */
+.movie-detail-card.expanded .detail-banner-wrap {
+  position: relative;
+  top: auto; right: auto; bottom: auto; left: auto;
+  width: 100%;
+  z-index: 0;
+}
+.movie-detail-card.expanded .detail-banner {
+  position: static;
+  width: 100%;
+  height: auto;
+  object-fit: initial;
+  filter: brightness(0.5);
+  display: block;
+}
+
+/* Poster + details overlaid at the bottom of the banner */
+.movie-detail-card.expanded .detail-content {
+  position: absolute;
+  top: auto; bottom: 0; left: 0; right: 0;
+  align-items: flex-end;
+  gap: 2rem;
+  padding: 2.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.25) 60%, transparent 100%);
+}
+.movie-detail-card.expanded .detail-poster {
+  width: 200px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  border: none;
+}
+.movie-detail-card.expanded .detail-body h2 {
+  font-size: clamp(1.4rem, 2.8vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+.movie-detail-card.expanded .detail-body .detail-plot { max-width: 55ch; }
+
+/* Tags are in normal flow after the banner — hide them to avoid extra height */
+.movie-detail-card.expanded .detail-tags { display: none; }
+
+/* Back button */
+.detail-back-btn {
+  position: absolute;
+  top: 1.25rem; right: 1.25rem;
+  z-index: 2;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s;
+}
+.detail-back-btn:hover { background: rgba(255,255,255,0.2); }
+
 /* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 860px) {
   #movie-grid { grid-template-columns: repeat(2, 1fr); }
@@ -474,4 +539,6 @@ html, body {
   #movie-grid { grid-template-columns: 1fr; }
   .person-detail-card { flex-direction: column; }
   .person-detail-card .detail-avatar-wrap { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+  .movie-detail-card.expanded .detail-content { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1.25rem; }
+  .movie-detail-card.expanded .detail-poster { width: 110px; }
 }

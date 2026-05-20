@@ -109,7 +109,7 @@ function hideAll() {
   for (const el of [movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
     el.style.display = "none";
     el.style.visibility = "";
-    el.classList.remove("card-reveal");
+    el.classList.remove("card-reveal", "expanded");
     el.innerHTML = "";
   }
   queryTagsEl.innerHTML = "";
@@ -224,6 +224,26 @@ function renderMovieGrid(results) {
         ${movie.year ? `<div class="banner-year">${movie.year}</div>` : ""}
         ${extra.length ? `<div class="banner-meta">${extra.map(f => escHtml(String(f.value))).join("  ·  ")}</div>` : ""}
       </div>`;
+    card.addEventListener("click", () => {
+      const saved = {
+        answer:  answerEl.style.display,
+        tags:    queryTagsEl.style.display,
+        divider: dividerEl.style.display,
+        toggle:  viewToggle.style.display,
+      };
+      movieGridEl.style.display = "none";
+      answerEl.style.display    = "none";
+      queryTagsEl.style.display = "none";
+      dividerEl.style.display   = "none";
+      viewToggle.style.display  = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      renderMovieDetail(movie, /* fromGrid */ true, () => {
+        answerEl.style.display    = saved.answer;
+        queryTagsEl.style.display = saved.tags;
+        dividerEl.style.display   = saved.divider;
+        viewToggle.style.display  = saved.toggle;
+      });
+    });
     movieGridEl.appendChild(card);
   });
 }
@@ -277,8 +297,9 @@ const TAG_TYPE_CLASS = {
   oscar_noms:  "oscarnom",
 };
 
-function renderMovieDetail(movie) {
+function renderMovieDetail(movie, fromGrid = false, onBack = null) {
   movieDetailEl.style.display = "flex";
+  movieDetailEl.classList.toggle("expanded", fromGrid);
   const year      = movie.year    ? ` (${movie.year})` : "";
   const rating    = movie.rating  ? `★ ${Number(movie.rating).toFixed(1)}` : "";
   const runtime   = movie.runtime ? `${movie.runtime} min` : "";
@@ -298,6 +319,7 @@ function renderMovieDetail(movie) {
     <div class="detail-banner-wrap">
       ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
     </div>
+    ${fromGrid ? `<button class="detail-back-btn" id="detail-back">← Back</button>` : ""}
     <div class="detail-content">
       ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
       <div class="detail-body">
@@ -309,6 +331,15 @@ function renderMovieDetail(movie) {
       </div>
     </div>
     ${tags.length ? `<div class="detail-tags">${tags.map(({text}) => `<span class="detail-tag">${escHtml(text)}</span>`).join("")}</div>` : ""}`;
+
+  if (fromGrid) {
+    document.getElementById("detail-back").addEventListener("click", () => {
+      movieDetailEl.style.display = "none";
+      movieDetailEl.classList.remove("expanded");
+      movieGridEl.style.display = "grid";
+      if (onBack) onBack();
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
