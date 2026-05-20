@@ -171,6 +171,13 @@ def run_cypher(query):
         return [record.data() for record in result]
 
 
+def run_cypher_params(query: str, params: dict) -> list:
+    query = clean_cypher(query)
+    with driver.session(database=NEO4J_DATABASE) as session:
+        result = session.run(query, **params)  # type: ignore[arg-type]
+        return [record.data() for record in result]
+
+
 # ---------------------------
 # GRAPH BUILDER
 # ---------------------------

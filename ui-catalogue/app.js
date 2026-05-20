@@ -99,6 +99,7 @@ function setLoading(on) {
   viewToggle.style.visibility = "";
   loadingEl.style.display  = on ? "flex" : "none";
   if (on) {
+    answerEl.style.display = "";
     answerEl.textContent = "";
     answerEl.classList.remove("styled");
     hideAll();
@@ -315,22 +316,50 @@ function renderMovieDetail(movie, fromGrid = false, onBack = null) {
   const links = [];
   if (movie.imdb_url)       links.push(`<a href="${movie.imdb_url}" target="_blank">IMDb</a>`);
   if (movie.letterboxd_url) links.push(`<a href="${movie.letterboxd_url}" target="_blank">Letterboxd</a>`);
-  movieDetailEl.innerHTML = `
-    <div class="detail-banner-wrap">
-      ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
-    </div>
-    ${fromGrid ? `<button class="detail-back-btn" id="detail-back">← Back</button>` : ""}
-    <div class="detail-content">
-      ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
-      <div class="detail-body">
-        <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
-        ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
-        ${movie.tagline ? `<div style="font-style:italic;color:#777;font-size:.84rem">${escHtml(movie.tagline)}</div>` : ""}
-        ${movie.plot    ? `<div class="detail-plot">${escHtml(movie.plot)}</div>` : ""}
-        ${links.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${links.join(" · ")}</div>` : ""}
+
+  if (fromGrid) {
+    movieDetailEl.innerHTML = `
+      <div class="detail-hero">
+        <div class="detail-banner-wrap">
+          ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
+        </div>
+        <button class="detail-back-btn" id="detail-back">← Back</button>
+        <div class="detail-content">
+          ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
+          <div class="detail-body" id="detail-overlay-body">
+            <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
+            ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
+            ${movie.tagline ? `<div style="font-style:italic;color:#aaa;font-size:.84rem">${escHtml(movie.tagline)}</div>` : ""}
+            ${movie.plot    ? `<div class="detail-plot">${escHtml(movie.plot)}</div>` : ""}
+            ${links.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${links.join(" · ")}</div>` : ""}
+          </div>
+        </div>
       </div>
-    </div>
-    ${tags.length ? `<div class="detail-tags">${tags.map(({text}) => `<span class="detail-tag">${escHtml(text)}</span>`).join("")}</div>` : ""}`;
+      <div class="detail-info-section" id="detail-info-section" style="display:none"></div>`;
+
+    if (movie.slug) {
+      fetch(`/api/movie/${encodeURIComponent(movie.slug)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) fillMovieDetail(data); })
+        .catch(() => {});
+    }
+  } else {
+    movieDetailEl.innerHTML = `
+      <div class="detail-banner-wrap">
+        ${movie.banner ? `<img class="detail-banner" src="${escHtml(movie.banner)}" alt="" onerror="this.style.display='none'" />` : ""}
+      </div>
+      <div class="detail-content">
+        ${movie.poster ? `<img class="detail-poster" src="${escHtml(movie.poster)}" alt="${escHtml(movie.title || "")}" onerror="this.style.display='none'" />` : ""}
+        <div class="detail-body">
+          <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
+          ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
+          ${movie.tagline ? `<div style="font-style:italic;color:#777;font-size:.84rem">${escHtml(movie.tagline)}</div>` : ""}
+          ${movie.plot    ? `<div class="detail-plot">${escHtml(movie.plot)}</div>` : ""}
+          ${links.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${links.join(" · ")}</div>` : ""}
+        </div>
+      </div>
+      ${tags.length ? `<div class="detail-tags">${tags.map(({text}) => `<span class="detail-tag">${escHtml(text)}</span>`).join("")}</div>` : ""}`;
+  }
 
   if (fromGrid) {
     document.getElementById("detail-back").addEventListener("click", () => {
@@ -340,6 +369,55 @@ function renderMovieDetail(movie, fromGrid = false, onBack = null) {
       if (onBack) onBack();
     });
   }
+}
+
+function infoRow(label, value) {
+  if (!value) return "";
+  return `<div class="detail-info-row">
+    <span class="detail-info-label">${label}</span>
+    <span class="detail-info-value">${escHtml(value)}</span>
+  </div>`;
+}
+
+function fillMovieDetail(data) {
+  const body = document.getElementById("detail-overlay-body");
+  if (body) {
+    const yr      = data.year    ? ` (${data.year})` : "";
+    const rating  = data.rating  ? `★ ${Number(data.rating).toFixed(1)}` : "";
+    const runtime = data.runtime ? `${data.runtime} min` : "";
+    const meta    = [rating, runtime].filter(Boolean).join(" · ");
+    const lnks    = [];
+    if (data.imdb_url)       lnks.push(`<a href="${escHtml(data.imdb_url)}" target="_blank">IMDb</a>`);
+    if (data.letterboxd_url) lnks.push(`<a href="${escHtml(data.letterboxd_url)}" target="_blank">Letterboxd</a>`);
+    body.innerHTML = `
+      <h2>${escHtml(data.title || "—")}${escHtml(yr)}</h2>
+      ${meta ? `<div class="detail-meta">${meta}</div>` : ""}
+      ${data.tagline ? `<div style="font-style:italic;color:#aaa;font-size:.84rem">${escHtml(data.tagline)}</div>` : ""}
+      ${data.plot    ? `<div class="detail-plot">${escHtml(data.plot)}</div>` : ""}
+      ${lnks.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${lnks.join(" · ")}</div>` : ""}`;
+  }
+
+  const section = document.getElementById("detail-info-section");
+  if (!section) return;
+
+  const director   = (data.directors || []).join(", ") || null;
+  const cast       = (data.cast || []).join(" · ") || null;
+  const countries  = (data.countries || []).join(" · ") || null;
+  const languages  = (data.languages || []).filter(Boolean).join(" · ") || null;
+  const genres     = (data.genres || []).join(" · ") || null;
+  const miniThemes = (data.mini_themes || []).join(" · ") || null;
+
+  section.innerHTML = `
+    <div class="detail-info-left">
+      ${infoRow("Director",   director)}
+      ${infoRow("Cast",       cast)}
+      ${infoRow("Countries",  countries)}
+      ${infoRow("Languages",  languages)}
+      ${infoRow("Genres",     genres)}
+      ${infoRow("Themes",     miniThemes)}
+    </div>`;
+  section.style.display = "";
+  section.classList.add("card-reveal");
 }
 
 // ═══════════════════════════════════════════════════════════

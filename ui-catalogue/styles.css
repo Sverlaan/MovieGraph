@@ -468,9 +468,19 @@ html, body {
 .movie-banner-card { cursor: pointer; }
 
 /* ─── Movie detail card — expanded (from grid click) ─────── */
-.movie-detail-card.expanded { border: none; }
+.movie-detail-card.expanded {
+  border: none;
+  overflow: visible;
+  background: transparent;
+}
 
-/* Let the banner image sit in flow so its natural height sets the card height */
+/* Hero wraps the banner + overlay so absolute positioning is scoped to it */
+.movie-detail-card.expanded .detail-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Let the banner image sit in flow so its natural height sets the hero height */
 .movie-detail-card.expanded .detail-banner-wrap {
   position: relative;
   top: auto; right: auto; bottom: auto; left: auto;
@@ -493,7 +503,7 @@ html, body {
   align-items: flex-end;
   gap: 2rem;
   padding: 2.5rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.25) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
 }
 .movie-detail-card.expanded .detail-poster {
   width: 200px;
@@ -504,10 +514,43 @@ html, body {
   font-size: clamp(1.4rem, 2.8vw, 2.4rem);
   letter-spacing: -0.02em;
 }
-.movie-detail-card.expanded .detail-body .detail-plot { max-width: 55ch; }
+.movie-detail-card.expanded .detail-body .detail-plot { max-width: none; }
 
 /* Tags are in normal flow after the banner — hide them to avoid extra height */
 .movie-detail-card.expanded .detail-tags { display: none; }
+
+/* ─── Info section below the hero banner ─────────────────── */
+.detail-info-section {
+  display: block;
+  background: var(--bg);
+}
+.detail-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 2rem 2.5rem;
+}
+.detail-info-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.detail-info-row:last-child { border-bottom: none; }
+.detail-info-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.detail-info-value {
+  font-size: 0.86rem;
+  color: var(--ink);
+  line-height: 1.55;
+}
 
 /* Back button */
 .detail-back-btn {
