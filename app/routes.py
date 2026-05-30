@@ -25,11 +25,6 @@ def serialize_results(results):
     return [{k: serialize_value(v) for k, v in record.items()} for record in results]
 
 
-def serialize_graph(graph):
-    """Graph nodes/edges already contain only primitive property values; just run
-    the generic serializer to handle any date fields that slipped through."""
-    return serialize_value(graph)
-
 
 _MOVIE_DETAIL_CYPHER = """
 MATCH (m:Movie {slug: $slug})
@@ -64,14 +59,12 @@ def get_movie_detail(slug: str):
 
 @router.post("/ask")
 async def ask(request: QuestionRequest):
-    cypher, results, graph, answer, result_type, query_tags = await asyncio.to_thread(
+    cypher, results, answer, result_type = await asyncio.to_thread(
         ask_graph, request.question
     )
     return {
         "answer": answer,
         "result_type": result_type,
         "results": serialize_results(results),
-        "graph": serialize_graph(graph),
         "cypher": cypher,
-        "query_tags": [{"label": lbl, "value": val} for lbl, _prop, val in query_tags],
     }

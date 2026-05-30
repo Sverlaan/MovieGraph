@@ -28,7 +28,7 @@ def catalogue():
     return RedirectResponse(url="/ui-catalogue/index.html")
 
 
-app.mount("/ui", StaticFiles(directory="ui"), name="ui")
+# app.mount("/ui-old", StaticFiles(directory="ui-old"), name="ui-old")
 app.mount("/ui-catalogue", StaticFiles(directory="ui-catalogue"), name="ui-catalogue")
 
 

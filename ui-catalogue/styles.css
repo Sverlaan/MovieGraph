@@ -114,32 +114,6 @@ html, body {
 }
 .example-chip:hover { border-color: var(--ink); color: var(--ink); }
 
-/* ─── View toggle ─────────────────────────────────────────── */
-.view-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-top: 0.25rem;
-  border-top: 1px solid var(--border);
-}
-.toggle-btn {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  font-family: var(--font);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0 0 3px;
-  transition: color 0.15s, border-bottom-color 0.15s;
-}
-.toggle-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-.toggle-btn:hover  { color: var(--ink); }
-.toggle-sep { color: var(--border); font-size: 0.7rem; }
-
 /* ─── Output view ─────────────────────────────────────────── */
 .output-view {
   display: flex;
@@ -188,20 +162,6 @@ html, body {
 .answer-text.styled {
   padding-left: 1.1rem;
   border-left: 2px solid var(--accent);
-}
-
-/* Query tags */
-.query-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.query-tags:empty { display: none; }
-.query-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.16rem 0.5rem;
-  border: 1px solid;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
 }
 
 /* Results divider */
@@ -387,82 +347,6 @@ html, body {
 }
 .person-detail-card .detail-body .detail-meta { font-size: 0.8rem; color: var(--muted); }
 .person-detail-card .detail-body .detail-plot { font-size: 0.87rem; line-height: 1.65; }
-
-/* ─── Graph view ──────────────────────────────────────────── */
-.graph-view { display: flex; flex-direction: column; gap: 1.5rem; }
-
-#graph-container {
-  width: 100%; height: 480px;
-  border: 1px solid var(--border);
-  position: relative; overflow: hidden;
-  background: var(--white);
-  background-image:
-    linear-gradient(var(--faint) 1px, transparent 1px),
-    linear-gradient(90deg, var(--faint) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-#graph-container svg { width: 100%; height: 100%; }
-
-#graph-legend {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: rgba(250,250,249,0.95);
-  border: 1px solid var(--border);
-  padding: 0.45rem 0.7rem;
-  font-size: 0.7rem;
-  line-height: 2;
-  pointer-events: none;
-  letter-spacing: 0.05em;
-}
-.legend-dot {
-  display: inline-block;
-  width: 8px; height: 8px;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-
-#graph-controls {
-  position: absolute;
-  bottom: 12px; right: 12px;
-  display: flex; flex-direction: column; gap: 2px;
-}
-.graph-ctrl-btn {
-  width: 28px; height: 28px;
-  border: 1px solid var(--border);
-  background: var(--white);
-  font-size: 0.82rem; font-family: var(--font); font-weight: 700;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink);
-  transition: background 0.1s;
-  padding: 0;
-}
-.graph-ctrl-btn:hover { background: var(--faint); }
-
-/* ─── Cypher section ──────────────────────────────────────── */
-.cypher-section { display: flex; flex-direction: column; gap: 0.5rem; }
-.cypher-label {
-  font-size: 0.67rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.cypher-code {
-  background: #111;
-  color: #ccc;
-  padding: 1rem 1.25rem;
-  font-size: 0.77rem;
-  font-family: var(--mono);
-  line-height: 1.7;
-  overflow-x: auto;
-  white-space: pre;
-  margin: 0;
-  border: none;
-}
-.cypher-kw  { color: var(--accent); font-weight: 700; }
-.cypher-lbl { color: #aaa; }
-.cypher-str { color: #888; }
 
 /* ─── Movie banner card — clickable ──────────────────────── */
 .movie-banner-card { cursor: pointer; }
