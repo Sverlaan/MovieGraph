@@ -443,6 +443,99 @@ html, body {
   color: var(--accent);
 }
 
+/* ─── Extra detail sections (cast, oscar, collection, similar) ─ */
+.detail-extra-section {
+  background: var(--bg);
+  padding: 1.5rem 2.5rem;
+  border-top: 1px solid var(--border);
+}
+.detail-section-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+/* Cast row */
+.cast-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.cast-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.cast-avatar-wrap {
+  width: 112px; height: 112px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cast-avatar {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s;
+}
+.cast-member:hover .cast-avatar { transform: scale(1.08); }
+.cast-name {
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--muted);
+  width: 112px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s;
+}
+.cast-member:hover .cast-name { color: var(--accent); }
+
+/* Oscar nominations */
+.oscar-summary {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+.oscar-list { display: flex; flex-direction: column; }
+.oscar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--faint);
+}
+.oscar-item:last-child { border-bottom: none; }
+.oscar-winner { color: var(--ink); font-weight: 600; }
+.oscar-year { font-size: 0.7rem; color: var(--muted); flex-shrink: 0; }
+
+/* Collection poster stack */
+.collection-stack {
+  position: relative;
+  height: 192px;
+  cursor: pointer;
+}
+.collection-stack-item {
+  position: absolute;
+  top: 0;
+}
+.collection-stack-item img { height: 192px; width: auto; display: block; }
+.stack-pos-0 { left: 0;     z-index: 3; }
+.stack-pos-1 { left: 92px;  z-index: 2; transform: translateY(8px)  scale(0.87); transform-origin: top left; opacity: .72; }
+.stack-pos-2 { left: 168px; z-index: 1; transform: translateY(15px) scale(0.74); transform-origin: top left; opacity: .50; }
+
+/* Similar movies grid */
+.similar-movies-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
 /* Back button */
 .detail-back-btn {
   position: absolute;

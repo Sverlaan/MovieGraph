@@ -248,12 +248,21 @@ function renderMovieDetail(movie, onBack = null) {
         </div>
       </div>
     </div>
-    <div class="detail-info-section" id="detail-info-section" style="display:none"></div>`;
+    <div class="detail-info-section" id="detail-info-section" style="display:none"></div>
+    <div id="detail-cast-section"       class="detail-extra-section" style="display:none"></div>
+    <div id="detail-oscar-section"      class="detail-extra-section" style="display:none"></div>
+    <div id="detail-collection-section" class="detail-extra-section" style="display:none"></div>
+    <div id="detail-similar-section"    class="detail-extra-section" style="display:none"></div>`;
 
   if (movie.slug) {
     fetch(`/api/movie/${encodeURIComponent(movie.slug)}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) fillMovieDetail(data); })
+      .catch(() => {});
+
+    fetch(`/api/movie/${encodeURIComponent(movie.slug)}/similar`)
+      .then(r => r.ok ? r.json() : null)
+      .then(similar => { if (similar && similar.length) fillSimilarMovies(similar); })
       .catch(() => {});
   }
 
@@ -302,26 +311,128 @@ function fillMovieDetail(data) {
       ${lnks.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${lnks.join(" · ")}</div>` : ""}`;
   }
 
+  // Info table
   const section = document.getElementById("detail-info-section");
+  if (section) {
+    section.innerHTML = `
+      <div class="detail-info-left">
+        ${infoRowClickable("Director",   data.directors || [],                   name    => `Movies directed by ${name}`)}
+        ${infoRowClickable("Countries",  data.countries || [],                   country => `Movies from ${country}`)}
+        ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang    => `Movies in ${lang}`)}
+        ${infoRowClickable("Genres",     data.genres || [],                      genre   => `Movies in the ${genre} genre`)}
+        ${infoRowClickable("Themes",     data.mini_themes || [],                 theme   => `Movies with mini-theme ${theme}`)}
+      </div>`;
+    section.addEventListener("click", e => {
+      const chip = e.target.closest("[data-query]");
+      if (!chip) return;
+      inputEl.value = chip.dataset.query;
+      submitQuestion();
+    });
+    section.style.display = "";
+    section.classList.add("card-reveal");
+  }
+
+  // Cast avatars
+  const cast = (data.cast || []).filter(c => c && c.name);
+  if (cast.length) {
+    const castSection = document.getElementById("detail-cast-section");
+    if (castSection) {
+      castSection.innerHTML = `
+        <div class="detail-section-label">Cast</div>
+        <div class="cast-row">
+          ${cast.map(c => `
+            <div class="cast-member" data-query="${escHtml(`Movies starring ${c.name}`)}">
+              <div class="cast-avatar-wrap">
+                <img class="cast-avatar" src="${escHtml(c.avatar || AVATAR_FALLBACK)}"
+                     onerror="this.src='${AVATAR_FALLBACK}'" alt="${escHtml(c.name)}" />
+              </div>
+              <span class="cast-name">${escHtml(c.name)}</span>
+            </div>`).join("")}
+        </div>`;
+      castSection.addEventListener("click", e => {
+        const member = e.target.closest("[data-query]");
+        if (!member) return;
+        inputEl.value = member.dataset.query;
+        submitQuestion();
+      });
+      castSection.style.display = "";
+      castSection.classList.add("card-reveal");
+    }
+  }
+
+  // Oscar nominations
+  const oscarNoms = (data.oscar_noms || []).filter(o => o && o.category);
+  if (oscarNoms.length) {
+    const oscarSection = document.getElementById("detail-oscar-section");
+    if (oscarSection) {
+      const wins  = oscarNoms.filter(n => n.winner).length;
+      const total = oscarNoms.length;
+      const summary = wins > 0
+        ? `${wins} win${wins > 1 ? "s" : ""} · ${total} nomination${total > 1 ? "s" : ""}`
+        : `${total} nomination${total > 1 ? "s" : ""}`;
+      oscarSection.innerHTML = `
+        <div class="detail-section-label">Academy Awards</div>
+        <div class="oscar-summary">${escHtml(summary)}</div>
+        <div class="oscar-list">
+          ${oscarNoms.map(n => `
+            <div class="oscar-item${n.winner ? " oscar-winner" : ""}">
+              <span>${n.winner ? "★" : "○"} ${escHtml(n.category || "")}</span>
+              <span class="oscar-year">${escHtml(String(n.year || ""))}</span>
+            </div>`).join("")}
+        </div>`;
+      oscarSection.style.display = "";
+      oscarSection.classList.add("card-reveal");
+    }
+  }
+
+  // Collection posters
+  const collectionMovies = (data.collection_movies || []).filter(m => m && m.poster);
+  if (data.collection_name && collectionMovies.length) {
+    const colSection = document.getElementById("detail-collection-section");
+    if (colSection) {
+      const stack = collectionMovies.slice(0, 3);
+      const collectionQuery = `Movies in the ${data.collection_name}`;
+      colSection.innerHTML = `
+        <div class="detail-section-label">${escHtml(data.collection_name)}</div>
+        <div class="collection-stack">
+          ${stack.map((m, i) => `
+            <div class="collection-stack-item stack-pos-${i}">
+              <img src="${escHtml(m.poster)}" alt="${escHtml(m.title || "")}" onerror="this.style.display='none'" />
+            </div>`).join("")}
+        </div>`;
+      colSection.querySelector(".collection-stack").addEventListener("click", () => {
+        inputEl.value = collectionQuery;
+        submitQuestion();
+      });
+      colSection.style.display = "";
+      colSection.classList.add("card-reveal");
+    }
+  }
+}
+
+function fillSimilarMovies(movies) {
+  const section = document.getElementById("detail-similar-section");
   if (!section) return;
-
   section.innerHTML = `
-    <div class="detail-info-left">
-      ${infoRowClickable("Director",   data.directors || [],                  name    => `Movies directed by ${name}`)}
-      ${infoRowClickable("Cast",       data.cast || [],                       name    => `Movies starring ${name}`)}
-      ${infoRowClickable("Countries",  data.countries || [],                  country => `Movies from ${country}`)}
-      ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang   => `Movies in ${lang}`)}
-      ${infoRowClickable("Genres",     data.genres || [],                     genre   => `Movies in the ${genre} genre`)}
-      ${infoRowClickable("Themes",     data.mini_themes || [],                theme   => `Movies with mini-theme ${theme}`)}
+    <div class="detail-section-label">Similar Movies</div>
+    <div class="similar-movies-grid">
+      ${movies.map(movie => `
+        <div class="movie-banner-card" data-slug="${escHtml(movie.slug || "")}">
+          ${movie.banner || movie.poster
+            ? `<img class="banner-img" src="${escHtml(movie.banner || movie.poster)}" alt="" onerror="this.style.display='none'" />`
+            : ""}
+          <div class="banner-info">
+            <div class="banner-title">${escHtml(movie.title || "—")}</div>
+            ${movie.year ? `<div class="banner-year">${movie.year}</div>` : ""}
+          </div>
+        </div>`).join("")}
     </div>`;
-
   section.addEventListener("click", e => {
-    const chip = e.target.closest("[data-query]");
-    if (!chip) return;
-    inputEl.value = chip.dataset.query;
-    submitQuestion();
+    const card = e.target.closest("[data-slug]");
+    if (!card || !card.dataset.slug) return;
+    const movie = movies.find(m => m.slug === card.dataset.slug);
+    if (movie) renderMovieDetail(movie);
   });
-
   section.style.display = "";
   section.classList.add("card-reveal");
 }
