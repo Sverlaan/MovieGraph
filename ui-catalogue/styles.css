@@ -435,6 +435,13 @@ html, body {
   color: var(--ink);
   line-height: 1.55;
 }
+.detail-info-chip {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.detail-info-chip:hover {
+  color: var(--accent);
+}
 
 /* Back button */
 .detail-back-btn {

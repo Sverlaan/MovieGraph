@@ -3,9 +3,12 @@ from openai import OpenAI
 from app.prompts import cypher_prompt, answer_prompt
 
 from dotenv import load_dotenv
+import logging
 import yaml
 import os
 import warnings
+
+logger = logging.getLogger(__name__)
 
 # ---- SUPPRESS WARNINGS ----
 warnings.filterwarnings("ignore")
@@ -125,6 +128,7 @@ def generate_cypher(question, schema_text, error=None):
 
 def run_cypher(query):
     query = clean_cypher(query)
+    logger.info("Cypher:\n%s", query)
     with driver.session(database=NEO4J_DATABASE) as session:
         result = session.run(query)  # type: ignore[arg-type]
         return [record.data() for record in result]
@@ -172,6 +176,7 @@ def detect_result_type(results):
 
 
 def ask_graph(question, max_retries=2):
+    logger.info("Question: %s", question)
     schema_text = format_schema(SCHEMA)
 
     error = None

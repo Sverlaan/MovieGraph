@@ -126,7 +126,11 @@ function showAnswer(text) {
     const words = text.split(/(\s+)/);
     let i = 0;
     function next() {
-      if (i >= words.length) { resolve(); return; }
+      if (i >= words.length) {
+        answerEl.innerHTML = renderMarkdown(escHtml(text));
+        resolve();
+        return;
+      }
       answerEl.textContent += words[i++];
       setTimeout(next, 18);
     }
@@ -269,6 +273,17 @@ function infoRow(label, value) {
   </div>`;
 }
 
+function infoRowClickable(label, items, queryFn) {
+  if (!items || !items.length) return "";
+  const chips = items
+    .map(item => `<span class="detail-info-chip" data-query="${escHtml(queryFn(item))}">${escHtml(item)}</span>`)
+    .join(" · ");
+  return `<div class="detail-info-row">
+    <span class="detail-info-label">${label}</span>
+    <span class="detail-info-value">${chips}</span>
+  </div>`;
+}
+
 function fillMovieDetail(data) {
   const body = document.getElementById("detail-overlay-body");
   if (body) {
@@ -290,22 +305,23 @@ function fillMovieDetail(data) {
   const section = document.getElementById("detail-info-section");
   if (!section) return;
 
-  const director   = (data.directors || []).join(", ") || null;
-  const cast       = (data.cast || []).join(" · ") || null;
-  const countries  = (data.countries || []).join(" · ") || null;
-  const languages  = (data.languages || []).filter(Boolean).join(" · ") || null;
-  const genres     = (data.genres || []).join(" · ") || null;
-  const miniThemes = (data.mini_themes || []).join(" · ") || null;
-
   section.innerHTML = `
     <div class="detail-info-left">
-      ${infoRow("Director",   director)}
-      ${infoRow("Cast",       cast)}
-      ${infoRow("Countries",  countries)}
-      ${infoRow("Languages",  languages)}
-      ${infoRow("Genres",     genres)}
-      ${infoRow("Themes",     miniThemes)}
+      ${infoRowClickable("Director",   data.directors || [],                  name    => `Movies directed by ${name}`)}
+      ${infoRowClickable("Cast",       data.cast || [],                       name    => `Movies starring ${name}`)}
+      ${infoRowClickable("Countries",  data.countries || [],                  country => `Movies from ${country}`)}
+      ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang   => `Movies in ${lang}`)}
+      ${infoRowClickable("Genres",     data.genres || [],                     genre   => `Movies in the ${genre} genre`)}
+      ${infoRowClickable("Themes",     data.mini_themes || [],                theme   => `Movies with mini-theme ${theme}`)}
     </div>`;
+
+  section.addEventListener("click", e => {
+    const chip = e.target.closest("[data-query]");
+    if (!chip) return;
+    inputEl.value = chip.dataset.query;
+    submitQuestion();
+  });
+
   section.style.display = "";
   section.classList.add("card-reveal");
 }
@@ -324,4 +340,10 @@ function escHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function renderMarkdown(html) {
+  return html
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g,     "<em>$1</em>");
 }
