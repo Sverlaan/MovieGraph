@@ -70,7 +70,6 @@ QUESTION_TEMPLATES = [
     "Top movies from {COUNTRY}",
     "Top {GENRE} movies from {COUNTRY}",
     "Movies from {STUDIO}",
-    "What actors acted in the most movies?",
     "Filmography of {PERSON}",
     "Who has collaborated with {PERSON} the most?",
     "Movies directed by {DIRECTOR} and star {ACTOR}",
