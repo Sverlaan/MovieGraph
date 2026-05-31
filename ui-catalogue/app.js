@@ -2,7 +2,7 @@
 // STATE
 // ═══════════════════════════════════════════════════════════
 const API_URL        = "/ask";
-const AVATAR_FALLBACK = "https://via.placeholder.com/140x140?text=?";
+const AVATAR_FALLBACK = "/ui-catalogue/avatar-placeholder.svg";
 
 let currentData = null;
 
@@ -184,14 +184,12 @@ function renderPersonGrid(results) {
   results.forEach(person => {
     const imgSrc = person.avatar || person.picture || AVATAR_FALLBACK;
     const card = document.createElement("div");
-    card.className = "person-card";
-    const extra = extraFields(person, PERSON_PRIMARY).slice(0, 2);
+    card.className = "person-banner-card";
     card.innerHTML = `
-      <div class="avatar-wrap">
-        <img class="avatar" src="${imgSrc}" alt="${escHtml(person.name || "")}" onerror="this.src='${AVATAR_FALLBACK}'" />
-      </div>
-      <div class="person-name">${escHtml(person.name || "—")}</div>
-      ${extra.length ? `<div class="person-meta">${extra.map(f => escHtml(String(f.value))).join(" · ")}</div>` : ""}`;
+      <img class="person-banner-img" src="${imgSrc}" alt="${escHtml(person.name || "")}" onerror="this.src='${AVATAR_FALLBACK}'" />
+      <div class="person-banner-info">
+        <div class="person-banner-name">${escHtml(person.name || "—")}</div>
+      </div>`;
     personGridEl.appendChild(card);
   });
 }
@@ -232,8 +230,7 @@ function renderMovieDetail(movie, onBack = null) {
   movieDetailEl.classList.add("expanded");
   const year      = movie.year    ? ` (${movie.year})` : "";
   const rating    = movie.rating  ? `★ ${Number(movie.rating).toFixed(1)}` : "";
-  const runtime   = movie.runtime ? `${movie.runtime} min` : "";
-  const metaParts = [rating, runtime].filter(Boolean);
+  const metaParts = [rating].filter(Boolean);
   movieDetailEl.innerHTML = `
     <div class="detail-hero">
       <div class="detail-banner-wrap">
@@ -282,6 +279,15 @@ function infoRow(label, value) {
   </div>`;
 }
 
+function infoRowLinks(label, links) {
+  if (!links || !links.length) return "";
+  const anchors = links.map(l => `<a href="${escHtml(l.url)}" target="_blank">${escHtml(l.text)}</a>`).join(" · ");
+  return `<div class="detail-info-row">
+    <span class="detail-info-label">${label}</span>
+    <span class="detail-info-value">${anchors}</span>
+  </div>`;
+}
+
 function infoRowClickable(label, items, queryFn) {
   if (!items || !items.length) return "";
   const chips = items
@@ -294,33 +300,38 @@ function infoRowClickable(label, items, queryFn) {
 }
 
 function fillMovieDetail(data) {
+  // Fill banner from full API data (initial render may have had no banner)
+  const bannerWrap = movieDetailEl.querySelector(".detail-banner-wrap");
+  if (bannerWrap && data.banner && !bannerWrap.querySelector("img")) {
+    bannerWrap.innerHTML = `<img class="detail-banner" src="${escHtml(data.banner)}" alt="" onerror="this.style.display='none'" />`;
+  }
+
   const body = document.getElementById("detail-overlay-body");
   if (body) {
-    const yr      = data.year    ? ` (${data.year})` : "";
-    const rating  = data.rating  ? `★ ${Number(data.rating).toFixed(1)}` : "";
-    const runtime = data.runtime ? `${data.runtime} min` : "";
-    const meta    = [rating, runtime].filter(Boolean).join(" · ");
-    const lnks    = [];
-    if (data.imdb_url)       lnks.push(`<a href="${escHtml(data.imdb_url)}" target="_blank">IMDb</a>`);
-    if (data.letterboxd_url) lnks.push(`<a href="${escHtml(data.letterboxd_url)}" target="_blank">Letterboxd</a>`);
+    const yr     = data.year   ? ` (${data.year})` : "";
+    const rating = data.rating ? `★ ${Number(data.rating).toFixed(1)}` : "";
     body.innerHTML = `
       <h2>${escHtml(data.title || "—")}${escHtml(yr)}</h2>
-      ${meta ? `<div class="detail-meta">${meta}</div>` : ""}
-      ${data.tagline ? `<div style="font-style:italic;color:#aaa;font-size:.84rem">${escHtml(data.tagline)}</div>` : ""}
-      ${data.plot    ? `<div class="detail-plot">${escHtml(data.plot)}</div>` : ""}
-      ${lnks.length  ? `<div style="font-size:.8rem;margin-top:.5rem;color:#999">${lnks.join(" · ")}</div>` : ""}`;
+      ${rating ? `<div class="detail-meta">${rating}</div>` : ""}
+      ${data.plot ? `<div class="detail-plot">${escHtml(data.plot)}</div>` : ""}`;
   }
 
   // Info table
   const section = document.getElementById("detail-info-section");
   if (section) {
+    const linkItems = [];
+    if (data.imdb_url)       linkItems.push({ text: "IMDb",        url: data.imdb_url });
+    if (data.letterboxd_url) linkItems.push({ text: "Letterboxd",  url: data.letterboxd_url });
+    if (data.trailer_url)    linkItems.push({ text: "YouTube",     url: data.trailer_url });
     section.innerHTML = `
       <div class="detail-info-left">
+        ${infoRow("Runtime",    data.runtime ? `${data.runtime} minutes` : "")}
         ${infoRowClickable("Director",   (data.directors || []).map(d => typeof d === "string" ? d : d.name).filter(Boolean), name => `Movies directed by ${name}`)}
         ${infoRowClickable("Countries",  data.countries || [],                   country => `Movies from ${country}`)}
         ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang    => `Movies in ${lang}`)}
         ${infoRowClickable("Genres",     data.genres || [],                      genre   => `Movies in the ${genre} genre`)}
         ${infoRowClickable("Themes",     data.mini_themes || [],                 theme   => `Movies with mini-theme ${theme}`)}
+        ${infoRowLinks("Links", linkItems)}
       </div>`;
     section.addEventListener("click", e => {
       const chip = e.target.closest("[data-query]");
@@ -345,7 +356,7 @@ function fillMovieDetail(data) {
         <div class="people-row">
           ${people.map(p => `
             <div class="person-banner-card" data-query="${escHtml(p._role === "director" ? `Movies directed by ${p.name}` : p._role === "crew" ? `Movies ${p.name} worked on` : `Movies starring ${p.name}`)}">
-              ${p.avatar ? `<img class="person-banner-img" src="${escHtml(p.avatar)}" alt="${escHtml(p.name)}" onerror="this.style.display='none'" />` : ""}
+              <img class="person-banner-img" src="${escHtml(p.avatar || AVATAR_FALLBACK)}" alt="${escHtml(p.name)}" onerror="this.src='${AVATAR_FALLBACK}'" />
               <div class="person-banner-info">
                 <div class="person-banner-name">${escHtml(p.name)}</div>
                 <div class="person-banner-role">${escHtml(p._label)}</div>
@@ -388,24 +399,28 @@ function fillMovieDetail(data) {
     }
   }
 
-  // Collection posters
-  const collectionMovies = (data.collection_movies || []).filter(m => m && m.poster);
+  // Collection movies grid
+  const collectionMovies = (data.collection_movies || []).filter(m => m && m.slug);
   if (data.collection_name && collectionMovies.length) {
     const colSection = document.getElementById("detail-collection-section");
     if (colSection) {
-      const stack = collectionMovies.slice(0, 3);
-      const collectionQuery = `Movies in the ${data.collection_name}`;
       colSection.innerHTML = `
         <div class="detail-section-label">${escHtml(data.collection_name)}</div>
-        <div class="collection-stack">
-          ${stack.map((m, i) => `
-            <div class="collection-stack-item stack-pos-${i}">
-              <img src="${escHtml(m.poster)}" alt="${escHtml(m.title || "")}" onerror="this.style.display='none'" />
+        <div class="collection-movies-grid">
+          ${collectionMovies.map(m => `
+            <div class="movie-banner-card" data-slug="${escHtml(m.slug || "")}">
+              ${(m.banner || m.poster) ? `<img class="banner-img" src="${escHtml(m.banner || m.poster)}" alt="" onerror="this.style.display='none'" />` : ""}
+              <div class="banner-info">
+                <div class="banner-title">${escHtml(m.title || "—")}</div>
+                ${m.year ? `<div class="banner-year">${m.year}</div>` : ""}
+              </div>
             </div>`).join("")}
         </div>`;
-      colSection.querySelector(".collection-stack").addEventListener("click", () => {
-        inputEl.value = collectionQuery;
-        submitQuestion();
+      colSection.addEventListener("click", e => {
+        const card = e.target.closest("[data-slug]");
+        if (!card || !card.dataset.slug) return;
+        const movie = collectionMovies.find(m => m.slug === card.dataset.slug);
+        if (movie) renderMovieDetail(movie);
       });
       colSection.style.display = "";
       colSection.classList.add("card-reveal");

@@ -56,17 +56,19 @@ CALL { WITH m
     ELSE null END) AS oscar_noms
 }
 CALL { WITH m
-  OPTIONAL MATCH (m)-[:BELONGS_TO_COLLECTION]->(c:Collection)<-[:BELONGS_TO_COLLECTION]-(other:Movie)
-  WITH c, other ORDER BY other.release_year ASC
+  OPTIONAL MATCH (m)-[:BELONGS_TO_COLLECTION]->(c:Collection)
+  WITH m, c
+  OPTIONAL MATCH (all_col:Movie)-[:BELONGS_TO_COLLECTION]->(c)
+  WITH c, all_col ORDER BY all_col.release_year ASC
   RETURN head(collect(DISTINCT c.name)) AS collection_name,
-         collect(CASE WHEN other IS NOT NULL
-           THEN {title: other.title, poster: other.poster, slug: other.slug, year: other.release_year}
+         collect(CASE WHEN all_col IS NOT NULL
+           THEN {title: all_col.title, poster: all_col.poster, banner: all_col.banner, slug: all_col.slug, year: all_col.release_year}
            ELSE null END) AS collection_movies
 }
 RETURN
   m.title AS title, m.release_year AS year, m.rating AS rating, m.runtime AS runtime,
   m.plot AS plot, m.tagline AS tagline, m.poster AS poster, m.banner AS banner,
-  m.imdb_url AS imdb_url, m.letterboxd_url AS letterboxd_url, m.slug AS slug,
+  m.imdb_url AS imdb_url, m.letterboxd_url AS letterboxd_url, m.trailer AS trailer_url, m.slug AS slug,
   directors, cast, crew,
   [(m)-[:PRODUCED_IN]->(co:Country) | co.name] AS countries,
   [(m)-[:SPOKEN_IN]->(l:Language) | l.english_name] AS languages,
@@ -78,12 +80,12 @@ RETURN
 _SIMILAR_MOVIES_CYPHER = """
 MATCH (m:Movie {slug: $slug})
 WHERE m.mf_embedding IS NOT NULL
-CALL db.index.vector.queryNodes('movie_mf_embedding_index', 4, m.mf_embedding)
+CALL db.index.vector.queryNodes('movie_mf_embedding_index', 7, m.mf_embedding)
 YIELD node, score
 WHERE node.slug <> $slug AND node.rating IS NOT NULL
 RETURN node.title AS title, node.release_year AS year, node.poster AS poster,
        node.banner AS banner, node.slug AS slug, node.rating AS rating
-LIMIT 3
+LIMIT 6
 """
 
 

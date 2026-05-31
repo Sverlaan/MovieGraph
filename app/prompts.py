@@ -18,7 +18,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - No explanation
     - Use only schema labels/relations specified above.
     - LIMIT 24 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
-    - Always use DISTINCT to avoid duplicates, unless the question explicitly asks for duplicates.
+    - Always use DISTINCT to avoid duplicates, unless the question explicitly asks for duplicates. Exception: never add DISTINCT to person_list queries that order by a relationship property (e.g. r.billing_order), because DISTINCT removes the relationship variable from scope and breaks ORDER BY.
     - For selecting movies that a user has seen, use the RATED edge
     - When asked about "shared cast" between movies, only count it when at least 2 actors are shared, and return the names of the shared actors as well.
     - For general ratings of a movie, use the rating property on the Movie node
@@ -32,8 +32,9 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
         - For movies on a specific topic, order by number of matched keywords descending, then by rating descending.
         - For movies from a studio, order by release year descending.
         - Otherwise, if no natural ordering exists, order by rating descending.
-    - CRITICAL: When using RETURN DISTINCT or aggregation, ORDER BY must only reference aliases defined in the RETURN clause (e.g. ORDER BY year DESC), never the original node variables (e.g. NOT m.release_year DESC — m is not accessible after DISTINCT). The release year alias is always `year`.
+    - CRITICAL: When using RETURN DISTINCT or aggregation, ORDER BY must only reference aliases defined in the RETURN clause (e.g. ORDER BY year DESC), never the original node or relationship variables (e.g. NOT m.release_year DESC, NOT r.billing_order ASC — these variables are not accessible after DISTINCT). The release year alias is always `year`. If you need to ORDER BY a relationship property such as r.billing_order, you must use plain RETURN (no DISTINCT) so the relationship variable stays in scope.
     - CRITICAL: Whenever ordering by rating (ascending or descending), always add `AND m.rating IS NOT NULL` to the WHERE clause (or `WHERE m.rating IS NOT NULL` if no WHERE exists yet). NULL ratings sort before all real values in DESC order and will otherwise appear at the top of results.
+    - For Oscar categories, use the canonical category names, which are: , MUSIC (Original Score), MUSIC (Original Song), BEST PICTURE, WRITING (Adapted Screenplay), ART DIRECTION, COSTUME DESIGN, VISUAL EFFECTS, ACTRESS IN A LEADING ROLE, CINEMATOGRAPHY, DIRECTING, ANIMATED FEATURE FILM, INTERNATIONAL FEATURE FILM, SOUND EDITING, SOUND MIXING, WRITING (Original Screenplay), ACTOR IN A SUPPORTING ROLE, ACTRESS IN A SUPPORTING ROLE, MAKEUP AND HAIRSTYLING. 
     - When being asked about movies on a specific topic or subject, use Keyword nodes and return results that have the most matches. For example, if the question is "What are some movies about space exploration?", match keywords like "space", "astronaut", "nasa", etc. and return results that have the most matches across those keywords. So you should count the number of matched keywords for each movie and return results ordered by that count. Also, come up with multiple related keywords to match the topic broadly, don't just match the single word in the question. CRITICAL for keyword queries: use plain `RETURN` (not `RETURN DISTINCT`) and always include `matched_keywords` in the RETURN clause so it can be used in ORDER BY. Example structure:
         MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword)
         WHERE toLower(k.name) IN [...]
@@ -71,7 +72,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
       Questions asking specifically about a movie's cast or crew (e.g. "who are the cast of X", "show the crew of X", "who directed X") are person_list queries — use flat rows, NOT movie_detail format.
       Only use movie_detail when the question is about the movie itself (its plot, rating, overview, release info), not when it is asking about the people involved.
       For full cast or crew queries use LIMIT 100 so all members are returned.
-      Correct person_list pattern:
+      Correct person_list pattern (note: plain RETURN, no DISTINCT — DISTINCT would make r inaccessible in ORDER BY):
         MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {{slug: "inception"}})
         RETURN p.name AS name, p.picture AS avatar, r.character AS character
         ORDER BY r.billing_order ASC

@@ -56,6 +56,11 @@ COUNTRIES = [
     "Spain", "Mexico", "India", "Denmark", "Sweden", "Iran", "Brazil",
 ]
 
+OSCAR_CATEGORIES = [
+    "Best Picture", "Best Screenplay", "Best Director", "Best Actor", "Best Actress", "Best Visual Effects", "Best Cinematography", "Best Film Editing", "Best Original Score"
+]
+
+
 USERS = ["sverlaan", "flrz", "liannehr"]
 
 # ─── Question templates ────────────────────────────────────────────────────────
@@ -70,6 +75,9 @@ QUESTION_TEMPLATES = [
     "Top movies from {COUNTRY}",
     "Top {GENRE} movies from {COUNTRY}",
     "Movies from {STUDIO}",
+    "Nominated movies for {OSCAR_CATEGORY} Oscar in {YEAR}",
+    "Best Picture winners from {DECADE}",
+    "Nominated persons for {OSCAR_CATEGORY} Oscar in {YEAR}",
     "Filmography of {PERSON}",
     "Who has collaborated with {PERSON} the most?",
     "Movies directed by {DIRECTOR} and star {ACTOR}",
@@ -119,6 +127,7 @@ def _fill_template(template: str) -> str:
         "{DECADE}": DECADES,
         "{THEME}": THEMES,
         "{STUDIO}": STUDIOS,
+        "{OSCAR_CATEGORY}": OSCAR_CATEGORIES,
     }
     for placeholder, pool in replacements.items():
         if placeholder in result:

@@ -228,8 +228,13 @@ html, body {
 /* ─── Person grid ─────────────────────────────────────────── */
 #person-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+}
+#person-grid .person-banner-card {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2/3;
 }
 .person-card { display: flex; flex-direction: column; }
 .person-card .avatar-wrap {
@@ -300,7 +305,7 @@ html, body {
   font-size: 0.8rem; color: #888; letter-spacing: 0.04em;
 }
 .movie-detail-card .detail-body .detail-plot {
-  font-size: 0.87rem; line-height: 1.65; color: #bbb;
+  font-size: 0.95rem; line-height: 1.7; color: #bbb;
 }
 .movie-detail-card .detail-body a { color: #999; }
 .movie-detail-card .detail-tags {
@@ -442,12 +447,28 @@ html, body {
 .detail-info-chip:hover {
   color: var(--accent);
 }
+.detail-info-value a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.detail-info-value a:hover { color: var(--accent); }
+
+.detail-links {
+  padding: 0.6rem 2.5rem 1.1rem;
+  font-size: 0.78rem;
+}
+.detail-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.detail-links a:hover { color: var(--accent); }
 
 /* ─── Extra detail sections (cast, oscar, collection, similar) ─ */
 .detail-extra-section {
   background: var(--bg);
   padding: 1.5rem 2.5rem;
-  border-top: 1px solid var(--border);
 }
 .detail-section-label {
   font-size: 0.64rem;
@@ -456,6 +477,22 @@ html, body {
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 1rem;
+}
+
+/* Image sections and oscar section have no horizontal padding on the container */
+#detail-cast-section,
+#detail-collection-section,
+#detail-similar-section,
+#detail-oscar-section {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Oscar content (not the label) stays indented */
+#detail-oscar-section .oscar-summary,
+#detail-oscar-section .oscar-list {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
 }
 
 /* Cast & Crew banner row */
@@ -475,8 +512,8 @@ html, body {
 
 .person-banner-card {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 185px;
+  height: 278px;
   flex-shrink: 0;
   overflow: hidden;
   background: #3c3c3c;
@@ -542,20 +579,12 @@ html, body {
 .oscar-winner { color: var(--ink); font-weight: 600; }
 .oscar-year { font-size: 0.7rem; color: var(--muted); flex-shrink: 0; }
 
-/* Collection poster stack */
-.collection-stack {
-  position: relative;
-  height: 192px;
-  cursor: pointer;
+/* Collection movies grid */
+.collection-movies-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
 }
-.collection-stack-item {
-  position: absolute;
-  top: 0;
-}
-.collection-stack-item img { height: 192px; width: auto; display: block; }
-.stack-pos-0 { left: 0;     z-index: 3; }
-.stack-pos-1 { left: 92px;  z-index: 2; transform: translateY(8px)  scale(0.87); transform-origin: top left; opacity: .72; }
-.stack-pos-2 { left: 168px; z-index: 1; transform: translateY(15px) scale(0.74); transform-origin: top left; opacity: .50; }
 
 /* Similar movies grid */
 .similar-movies-grid {
@@ -586,12 +615,14 @@ html, body {
 
 /* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 860px) {
-  #movie-grid { grid-template-columns: repeat(2, 1fr); }
+  #movie-grid  { grid-template-columns: repeat(2, 1fr); }
+  #person-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 560px) {
   .main-area { padding: 5rem 0.75rem 3rem; }
   #question-input { font-size: 1.4rem; }
-  #movie-grid { grid-template-columns: 1fr; }
+  #movie-grid  { grid-template-columns: 1fr; }
+  #person-grid { grid-template-columns: repeat(2, 1fr); }
   .person-detail-card { flex-direction: column; }
   .person-detail-card .detail-avatar-wrap { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
   .movie-detail-card.expanded .detail-content { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1.25rem; }
