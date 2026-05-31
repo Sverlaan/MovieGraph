@@ -3,6 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from app.routes import router as rag_router
 from app.examples import get_random_examples
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(name)s - %(message)s")
 
 app = FastAPI(
     title="MovieGraph API",
@@ -28,13 +31,13 @@ def catalogue():
     return RedirectResponse(url="/ui-catalogue/index.html")
 
 
-app.mount("/ui", StaticFiles(directory="ui"), name="ui")
+# app.mount("/ui-old", StaticFiles(directory="ui-old"), name="ui-old")
 app.mount("/ui-catalogue", StaticFiles(directory="ui-catalogue"), name="ui-catalogue")
 
 
 def main():
     import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=["app"])
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=["app", "ui-catalogue"], log_level="info")
 
 
 if __name__ == "__main__":

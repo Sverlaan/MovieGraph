@@ -18,21 +18,23 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     - No explanation
     - Use only schema labels/relations specified above.
     - LIMIT 24 unless specified otherwise. There are two exceptions:When asked to show a person filmography or a users watchlist use LIMIT 500. Also use LIMIT 500 for combined watchlists of multiple users. When asked for a full cast or crew list, use LIMIT 100.
-    - Always use DISTINCT to avoid duplicates, unless the question explicitly asks for duplicates.
+    - Always use DISTINCT to avoid duplicates, unless the question explicitly asks for duplicates. Exception: never add DISTINCT to person_list queries that order by a relationship property (e.g. r.billing_order), because DISTINCT removes the relationship variable from scope and breaks ORDER BY.
     - For selecting movies that a user has seen, use the RATED edge
     - When asked about "shared cast" between movies, only count it when at least 2 actors are shared, and return the names of the shared actors as well.
     - For general ratings of a movie, use the rating property on the Movie node
     - Use the following conventions when ordering results, when no explicit ordering is specified in the question:
         - For movies from a certain year, decade, country, genre, or theme, order by rating descending.
-        - For a person's filmography, order by release date descending.
-        - For watchlists, order by release date descending.
+        - For a person's filmography, order by release year descending.
+        - For watchlists, order by release year descending.
         - For cast lists, order by billing_order ascending.
         - For "recently watched" or "watched together" queries, order by LOGGED date descending.
-        - For collections, order by release date acscending.
+        - For collections, order by release year ascending.
         - For movies on a specific topic, order by number of matched keywords descending, then by rating descending.
-        - For movies from a studio, order by release date descending.
+        - For movies from a studio, order by release year descending.
         - Otherwise, if no natural ordering exists, order by rating descending.
+    - CRITICAL: When using RETURN DISTINCT or aggregation, ORDER BY must only reference aliases defined in the RETURN clause (e.g. ORDER BY year DESC), never the original node or relationship variables (e.g. NOT m.release_year DESC, NOT r.billing_order ASC — these variables are not accessible after DISTINCT). The release year alias is always `year`. If you need to ORDER BY a relationship property such as r.billing_order, you must use plain RETURN (no DISTINCT) so the relationship variable stays in scope.
     - CRITICAL: Whenever ordering by rating (ascending or descending), always add `AND m.rating IS NOT NULL` to the WHERE clause (or `WHERE m.rating IS NOT NULL` if no WHERE exists yet). NULL ratings sort before all real values in DESC order and will otherwise appear at the top of results.
+    - For Oscar categories, use the canonical category names, which are: , MUSIC (Original Score), MUSIC (Original Song), BEST PICTURE, WRITING (Adapted Screenplay), ART DIRECTION, COSTUME DESIGN, VISUAL EFFECTS, ACTRESS IN A LEADING ROLE, CINEMATOGRAPHY, DIRECTING, ANIMATED FEATURE FILM, INTERNATIONAL FEATURE FILM, SOUND EDITING, SOUND MIXING, WRITING (Original Screenplay), ACTOR IN A SUPPORTING ROLE, ACTRESS IN A SUPPORTING ROLE, MAKEUP AND HAIRSTYLING. 
     - When being asked about movies on a specific topic or subject, use Keyword nodes and return results that have the most matches. For example, if the question is "What are some movies about space exploration?", match keywords like "space", "astronaut", "nasa", etc. and return results that have the most matches across those keywords. So you should count the number of matched keywords for each movie and return results ordered by that count. Also, come up with multiple related keywords to match the topic broadly, don't just match the single word in the question. CRITICAL for keyword queries: use plain `RETURN` (not `RETURN DISTINCT`) and always include `matched_keywords` in the RETURN clause so it can be used in ORDER BY. Example structure:
         MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword)
         WHERE toLower(k.name) IN [...]
@@ -70,7 +72,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
       Questions asking specifically about a movie's cast or crew (e.g. "who are the cast of X", "show the crew of X", "who directed X") are person_list queries — use flat rows, NOT movie_detail format.
       Only use movie_detail when the question is about the movie itself (its plot, rating, overview, release info), not when it is asking about the people involved.
       For full cast or crew queries use LIMIT 100 so all members are returned.
-      Correct person_list pattern:
+      Correct person_list pattern (note: plain RETURN, no DISTINCT — DISTINCT would make r inaccessible in ORDER BY):
         MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {{slug: "inception"}})
         RETURN p.name AS name, p.picture AS avatar, r.character AS character
         ORDER BY r.billing_order ASC
@@ -79,6 +81,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
         MATCH (m:Movie {{slug: "inception"}})
         CALL {{ WITH m MATCH (m)<-[:ACTED_IN]-(p:Person) RETURN collect({{name: p.name}}) AS cast }}
         RETURN cast
+    - When asking for the movies in a Collection (part of a series or trilogy), use the BELONGS_TO_COLLECTION edge and order by release year ascending. Note that the collection nodes contain the word "Collection" in their name, e.g. "The Lord of the Rings Collection", "Alien Collection", etc.
     - When a query asks for movies that were "watched together" or "recently watched" by some users, you can use the date property on the LOGGED edges to figure out when a movie was watched and whether the dates align.
     - If you need the current rating of a user for a movie, you can use the RATED edge. However, if you need the rating in combination with a certain date, use the LOGGED edge. Logs are used to reflect the rating at a certain date, and so there can be multiple LOGGED edges between the same user and movie and so logged ratings at different dates.
     - When asking for a shortest path between movies or persons, return the full path with all movies and people in between. Moreover, only use the ACTED_IN and WORKED_ON edges.
@@ -100,7 +103,7 @@ def cypher_prompt(schema_text: str, question: str, error: str | None = None) -> 
     ORDER BY combined_score DESC
 
     - When matching a specific movie by name, use a case-insensitive title match rather than exact slug lookup, since the user may not know the slug: `WHERE toLower(m.title) = toLower("Spirited Away")`. Do NOT match by slug unless the slug was explicitly provided.
-
+    - CRITICAL: When matching a specific named node (Genre, MiniTheme, Theme, Country, Language, Studio, Keyword, Person, etc.) by name, always use a single case-insensitive equality check: `WHERE toLower(n.name) = toLower("value")`. Never use `IN [...]` with multiple values unless the question explicitly names more than one. Do not invent or infer additional names beyond what is stated in the question. The full name after "mini-theme", "genre", "theme", etc. is a single entity name — never split it on words like "and", "or", "&". For example, "Movies with mini-theme Noir and dark crime dramas" means `WHERE toLower(mt.name) = toLower("Noir and dark crime dramas")`, not two separate conditions.
     Output format rules (for UI rendering):
     - When returning a list of movies, always include these aliases in RETURN: title, year, poster, banner, slug. Add extra relevant fields (e.g. rating, character, movie_count) after.
     - When returning a list of persons, always include these aliases in RETURN: name, avatar, Add extra relevant fields (e.g. movie_count, collaborations, character) after.

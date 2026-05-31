@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=21" />
 </head>
 <body>
 
@@ -36,13 +36,6 @@
       <div id="examples" class="examples"></div>
     </section>
 
-    <!-- View toggle (shown after first response) -->
-    <div id="view-toggle" class="view-toggle" style="display:none">
-      <button id="btn-output" class="toggle-btn active">Output</button>
-      <span class="toggle-sep">/</span>
-      <button id="btn-graph" class="toggle-btn">Graph</button>
-    </div>
-
     <!-- Output view -->
     <section id="output-view" class="output-view" style="display:none">
 
@@ -52,8 +45,6 @@
       </div>
 
       <div id="answer-text" class="answer-text"></div>
-      <div id="query-tags" class="query-tags"></div>
-
       <hr id="results-divider" class="results-divider" style="display:none" />
 
       <div id="movie-grid"    style="display:none"></div>
@@ -63,25 +54,8 @@
 
     </section>
 
-    <!-- Graph view -->
-    <section id="graph-view" class="graph-view" style="display:none">
-      <div id="graph-container">
-        <div id="graph-legend"></div>
-        <div id="graph-controls">
-          <button class="graph-ctrl-btn" id="btn-zoom-in">+</button>
-          <button class="graph-ctrl-btn" id="btn-zoom-out">−</button>
-          <button class="graph-ctrl-btn" id="btn-zoom-fit">FIT</button>
-        </div>
-      </div>
-      <div class="cypher-section">
-        <div class="cypher-label">Cypher Query</div>
-        <pre id="cypher-code" class="cypher-code"></pre>
-      </div>
-    </section>
-
   </main>
 
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=21"></script>
 </body>
 </html>
