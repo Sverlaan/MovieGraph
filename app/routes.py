@@ -33,11 +33,21 @@ CALL { WITH m
   WITH a, act ORDER BY act.billing_order ASC
   RETURN collect(CASE WHEN a IS NOT NULL
     THEN {name: a.name, avatar: a.picture, person_slug: a.person_slug, character: act.character}
-    ELSE null END)[0..5] AS cast
+    ELSE null END)[0..20] AS cast
 }
 CALL { WITH m
   OPTIONAL MATCH (d:Person)-[:WORKED_ON {job: 'Director'}]->(m)
-  RETURN collect(DISTINCT d.name) AS directors
+  RETURN collect(CASE WHEN d IS NOT NULL
+    THEN {name: d.name, avatar: d.picture, person_slug: d.person_slug}
+    ELSE null END) AS directors
+}
+CALL { WITH m
+  OPTIONAL MATCH (p:Person)-[w:WORKED_ON]->(m)
+  WHERE w.job IS NOT NULL AND w.job <> 'Director'
+  WITH p, w ORDER BY w.job ASC
+  RETURN collect(CASE WHEN p IS NOT NULL
+    THEN {name: p.name, avatar: p.picture, person_slug: p.person_slug, job: w.job}
+    ELSE null END)[0..10] AS crew
 }
 CALL { WITH m
   OPTIONAL MATCH (o:OscarNom)-[:NOMINATED_MOVIE]->(m)
@@ -57,7 +67,7 @@ RETURN
   m.title AS title, m.release_year AS year, m.rating AS rating, m.runtime AS runtime,
   m.plot AS plot, m.tagline AS tagline, m.poster AS poster, m.banner AS banner,
   m.imdb_url AS imdb_url, m.letterboxd_url AS letterboxd_url, m.slug AS slug,
-  directors, cast,
+  directors, cast, crew,
   [(m)-[:PRODUCED_IN]->(co:Country) | co.name] AS countries,
   [(m)-[:SPOKEN_IN]->(l:Language) | l.english_name] AS languages,
   [(m)-[:HAS_GENRE]->(g:Genre) | g.name] AS genres,

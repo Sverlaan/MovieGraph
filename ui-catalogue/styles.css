@@ -458,39 +458,67 @@ html, body {
   margin-bottom: 1rem;
 }
 
-/* Cast row */
-.cast-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
-.cast-member {
+/* Cast & Crew banner row */
+.people-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  padding-bottom: 4px;
+}
+.people-row::-webkit-scrollbar { height: 4px; }
+.people-row::-webkit-scrollbar-track { background: transparent; }
+.people-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.person-banner-card {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #3c3c3c;
   cursor: pointer;
 }
-.cast-avatar-wrap {
-  width: 112px; height: 112px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.cast-avatar {
-  width: 100%; height: 100%;
+.person-banner-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.45s;
+  filter: brightness(0.82);
+  transition: filter 0.35s, transform 0.45s;
 }
-.cast-member:hover .cast-avatar { transform: scale(1.08); }
-.cast-name {
-  font-size: 0.7rem;
-  text-align: center;
-  color: var(--muted);
-  width: 112px;
+.person-banner-card:hover .person-banner-img {
+  filter: brightness(0.65);
+  transform: scale(1.03);
+}
+.person-banner-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.4rem 0.65rem 0.55rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+}
+.person-banner-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.15s;
+  line-height: 1.3;
 }
-.cast-member:hover .cast-name { color: var(--accent); }
+.person-banner-role {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.12rem;
+  letter-spacing: 0.04em;
+}
 
 /* Oscar nominations */
 .oscar-summary {

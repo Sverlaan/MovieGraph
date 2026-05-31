@@ -316,7 +316,7 @@ function fillMovieDetail(data) {
   if (section) {
     section.innerHTML = `
       <div class="detail-info-left">
-        ${infoRowClickable("Director",   data.directors || [],                   name    => `Movies directed by ${name}`)}
+        ${infoRowClickable("Director",   (data.directors || []).map(d => typeof d === "string" ? d : d.name).filter(Boolean), name => `Movies directed by ${name}`)}
         ${infoRowClickable("Countries",  data.countries || [],                   country => `Movies from ${country}`)}
         ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang    => `Movies in ${lang}`)}
         ${infoRowClickable("Genres",     data.genres || [],                      genre   => `Movies in the ${genre} genre`)}
@@ -332,21 +332,24 @@ function fillMovieDetail(data) {
     section.classList.add("card-reveal");
   }
 
-  // Cast avatars
-  const cast = (data.cast || []).filter(c => c && c.name);
-  if (cast.length) {
+  // Cast & Crew banner row: directors first, then cast, then other crew
+  const directors = (data.directors || []).filter(d => d && d.name).map(d => ({ ...d, _role: "director", _label: "Director" }));
+  const castMembers = (data.cast || []).filter(c => c && c.name).map(c => ({ ...c, _role: "cast", _label: c.character || "Cast" }));
+  const crewMembers = (data.crew || []).filter(c => c && c.name).map(c => ({ ...c, _role: "crew", _label: c.job || "Crew" }));
+  const people = [...directors, ...castMembers, ...crewMembers];
+  if (people.length) {
     const castSection = document.getElementById("detail-cast-section");
     if (castSection) {
       castSection.innerHTML = `
-        <div class="detail-section-label">Cast</div>
-        <div class="cast-row">
-          ${cast.map(c => `
-            <div class="cast-member" data-query="${escHtml(`Movies starring ${c.name}`)}">
-              <div class="cast-avatar-wrap">
-                <img class="cast-avatar" src="${escHtml(c.avatar || AVATAR_FALLBACK)}"
-                     onerror="this.src='${AVATAR_FALLBACK}'" alt="${escHtml(c.name)}" />
+        <div class="detail-section-label">Cast & Crew</div>
+        <div class="people-row">
+          ${people.map(p => `
+            <div class="person-banner-card" data-query="${escHtml(p._role === "director" ? `Movies directed by ${p.name}` : p._role === "crew" ? `Movies ${p.name} worked on` : `Movies starring ${p.name}`)}">
+              ${p.avatar ? `<img class="person-banner-img" src="${escHtml(p.avatar)}" alt="${escHtml(p.name)}" onerror="this.style.display='none'" />` : ""}
+              <div class="person-banner-info">
+                <div class="person-banner-name">${escHtml(p.name)}</div>
+                <div class="person-banner-role">${escHtml(p._label)}</div>
               </div>
-              <span class="cast-name">${escHtml(c.name)}</span>
             </div>`).join("")}
         </div>`;
       castSection.addEventListener("click", e => {
