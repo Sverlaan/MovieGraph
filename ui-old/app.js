@@ -254,6 +254,7 @@ function renderMovieDetail(movie) {
     .slice(0, 14);
   const links = [];
   if (movie.imdb_url)       links.push(`<a href="${movie.imdb_url}" target="_blank">IMDb</a>`);
+  if (movie.tmdb_url)       links.push(`<a href="${movie.tmdb_url}" target="_blank">TMDb</a>`);
   if (movie.letterboxd_url) links.push(`<a href="${movie.letterboxd_url}" target="_blank">Letterboxd</a>`);
   movieDetailEl.innerHTML = `
     <div class="detail-banner-wrap">

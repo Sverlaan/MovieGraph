@@ -168,7 +168,6 @@ function renderMovieGrid(results) {
       movieGridEl.style.display = "none";
       answerEl.style.display    = "none";
       dividerEl.style.display   = "none";
-      window.scrollTo({ top: 0, behavior: "smooth" });
       renderMovieDetail(movie, () => {
         answerEl.style.display  = saved.answer;
         dividerEl.style.display = saved.divider;
@@ -251,6 +250,8 @@ function renderMovieDetail(movie, onBack = null) {
     <div id="detail-collection-section" class="detail-extra-section" style="display:none"></div>
     <div id="detail-similar-section"    class="detail-extra-section" style="display:none"></div>`;
 
+  window.scrollTo(0, 0);
+
   if (movie.slug) {
     fetch(`/api/movie/${encodeURIComponent(movie.slug)}`)
       .then(r => r.ok ? r.json() : null)
@@ -321,6 +322,7 @@ function fillMovieDetail(data) {
   if (section) {
     const linkItems = [];
     if (data.imdb_url)       linkItems.push({ text: "IMDb",        url: data.imdb_url });
+    if (data.tmdb_url)       linkItems.push({ text: "TMDb",        url: data.tmdb_url });
     if (data.letterboxd_url) linkItems.push({ text: "Letterboxd",  url: data.letterboxd_url });
     if (data.trailer_url)    linkItems.push({ text: "YouTube",     url: data.trailer_url });
     section.innerHTML = `

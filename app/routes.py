@@ -25,7 +25,6 @@ def serialize_results(results):
     return [{k: serialize_value(v) for k, v in record.items()} for record in results]
 
 
-
 _MOVIE_DETAIL_CYPHER = """
 MATCH (m:Movie {slug: $slug})
 CALL { WITH m
@@ -68,7 +67,7 @@ CALL { WITH m
 RETURN
   m.title AS title, m.release_year AS year, m.rating AS rating, m.runtime AS runtime,
   m.plot AS plot, m.tagline AS tagline, m.poster AS poster, m.banner AS banner,
-  m.imdb_url AS imdb_url, m.letterboxd_url AS letterboxd_url, m.trailer AS trailer_url, m.slug AS slug,
+  m.imdb_url AS imdb_url, m.tmdb_url AS tmdb_url, m.letterboxd_url AS letterboxd_url, m.trailer AS trailer_url, m.slug AS slug,
   directors, cast, crew,
   [(m)-[:PRODUCED_IN]->(co:Country) | co.name] AS countries,
   [(m)-[:SPOKEN_IN]->(l:Language) | l.english_name] AS languages,
@@ -80,9 +79,10 @@ RETURN
 _SIMILAR_MOVIES_CYPHER = """
 MATCH (m:Movie {slug: $slug})
 WHERE m.mf_embedding IS NOT NULL
-CALL db.index.vector.queryNodes('movie_mf_embedding_index', 7, m.mf_embedding)
+CALL db.index.vector.queryNodes('movie_mf_embedding_index', 20, m.mf_embedding)
 YIELD node, score
 WHERE node.slug <> $slug AND node.rating IS NOT NULL
+AND NOT (node)-[:BELONGS_TO_COLLECTION]->(:Collection)<-[:BELONGS_TO_COLLECTION]-(m)  // Exclude movies from the same collection
 RETURN node.title AS title, node.release_year AS year, node.poster AS poster,
        node.banner AS banner, node.slug AS slug, node.rating AS rating
 LIMIT 6
