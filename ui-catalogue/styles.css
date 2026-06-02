@@ -273,6 +273,19 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* ─── Full-screen movie detail mode ─────────────────────────
+   Break the main-area container so the banner fills the full
+   viewport width; hide the search bar above it.             */
+body.detail-open .main-area {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+body.detail-open .search-section { display: none; }
+body.detail-open .output-view    { gap: 0; }
+
 /* ─── Movie detail card ───────────────────────────────────── */
 .movie-detail-card {
   position: relative;
@@ -373,25 +386,28 @@ body {
   background: transparent;
 }
 
-/* Hero wraps the banner + overlay so absolute positioning is scoped to it */
+/* Hero fills the full viewport height */
 .movie-detail-card.expanded .detail-hero {
   position: relative;
   overflow: hidden;
+  height: 100vh;
 }
 
-/* Let the banner image sit in flow so its natural height sets the hero height */
+/* Banner wrap covers the entire hero */
 .movie-detail-card.expanded .detail-banner-wrap {
-  position: relative;
-  top: auto; right: auto; bottom: auto; left: auto;
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
   z-index: 0;
 }
 .movie-detail-card.expanded .detail-banner {
-  position: static;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  object-fit: initial;
-  filter: brightness(0.5);
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.82);
   display: block;
 }
 
@@ -400,14 +416,19 @@ body {
   position: absolute;
   top: auto; bottom: 0; left: 0; right: 0;
   align-items: flex-end;
-  gap: 2rem;
-  padding: 2.5rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+  gap: 2.5rem;
+  padding: 2.5rem 4rem 5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.3) 45%, transparent 100%);
 }
 .movie-detail-card.expanded .detail-poster {
   width: 200px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.55);
   border: none;
+}
+.movie-detail-card.expanded .detail-body {
+  flex: 1 1 auto;
+  max-width: 600px;
+  min-width: 0;
 }
 .movie-detail-card.expanded .detail-body h2 {
   font-size: clamp(1.4rem, 2.8vw, 2.4rem);
@@ -415,8 +436,48 @@ body {
 }
 .movie-detail-card.expanded .detail-body .detail-plot { max-width: none; }
 
+.detail-hero-synopsis {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.75);
+  margin-top: 0.3rem;
+}
+.detail-hero-sideinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: right;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.hero-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.hero-detail-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+}
+.hero-detail-value {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.35;
+}
+
 /* Tags are in normal flow after the banner — hide them to avoid extra height */
 .movie-detail-card.expanded .detail-tags { display: none; }
+
+/* Constrains the below-fold sections to the normal content width */
+.detail-sections-wrap {
+  max-width: var(--max-w);
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
 
 /* ─── Info section below the hero banner ─────────────────── */
 .detail-info-section {
@@ -603,11 +664,40 @@ body {
   gap: 2px;
 }
 
-/* Back button */
+/* Scroll-down arrow button */
+.detail-scroll-btn {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.38);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s;
+  animation: scroll-bounce 2.2s ease-in-out infinite;
+}
+.detail-scroll-btn:hover { background: rgba(255,255,255,0.28); }
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(7px); }
+}
+
+/* Back button — floats above both the hero and the sliding panel */
 .detail-back-btn {
   position: absolute;
   top: 1.25rem; right: 1.25rem;
-  z-index: 2;
+  z-index: 200;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.22);
   color: #fff;
@@ -665,4 +755,6 @@ body {
   .person-detail-card .detail-avatar-wrap { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
   .movie-detail-card.expanded .detail-content { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1.25rem; }
   .movie-detail-card.expanded .detail-poster { width: 110px; }
+  .movie-detail-card.expanded .detail-body { width: 100%; }
+  .detail-hero-sideinfo { margin-left: 0; text-align: left; }
 }

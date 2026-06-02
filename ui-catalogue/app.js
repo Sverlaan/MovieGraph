@@ -83,6 +83,7 @@ function setLoading(on) {
 }
 
 function hideAll() {
+  document.body.classList.remove("detail-open");
   for (const el of [movieGridEl, personGridEl, movieDetailEl, personDetailEl]) {
     el.style.display = "none";
     el.style.visibility = "";
@@ -225,6 +226,7 @@ const TAG_TYPE_CLASS = {
 };
 
 function renderMovieDetail(movie, onBack = null) {
+  document.body.classList.add("detail-open");
   movieDetailEl.style.display = "flex";
   movieDetailEl.classList.add("expanded");
   const year      = movie.year    ? ` (${movie.year})` : "";
@@ -242,13 +244,17 @@ function renderMovieDetail(movie, onBack = null) {
           <h2>${escHtml(movie.title || "—")}${escHtml(year)}</h2>
           ${metaParts.length ? `<div class="detail-meta">${metaParts.join(" · ")}</div>` : ""}
         </div>
+        <div class="detail-hero-sideinfo" id="detail-overlay-sideinfo"></div>
       </div>
+      <button class="detail-scroll-btn" id="detail-scroll-btn" aria-label="Scroll to details">↓</button>
     </div>
-    <div class="detail-info-section" id="detail-info-section" style="display:none"></div>
-    <div id="detail-cast-section"       class="detail-extra-section" style="display:none"></div>
-    <div id="detail-oscar-section"      class="detail-extra-section" style="display:none"></div>
-    <div id="detail-collection-section" class="detail-extra-section" style="display:none"></div>
-    <div id="detail-similar-section"    class="detail-extra-section" style="display:none"></div>`;
+    <div class="detail-sections-wrap">
+      <div class="detail-info-section" id="detail-info-section" style="display:none"></div>
+      <div id="detail-cast-section"       class="detail-extra-section" style="display:none"></div>
+      <div id="detail-oscar-section"      class="detail-extra-section" style="display:none"></div>
+      <div id="detail-collection-section" class="detail-extra-section" style="display:none"></div>
+      <div id="detail-similar-section"    class="detail-extra-section" style="display:none"></div>
+    </div>`;
 
   window.scrollTo(0, 0);
 
@@ -264,7 +270,14 @@ function renderMovieDetail(movie, onBack = null) {
       .catch(() => {});
   }
 
+  document.getElementById("detail-scroll-btn").addEventListener("click", () => {
+    const target = document.getElementById("detail-info-section") ||
+                   document.getElementById("detail-cast-section");
+    if (target) target.scrollIntoView({ behavior: "smooth" });
+  });
+
   document.getElementById("detail-back").addEventListener("click", () => {
+    document.body.classList.remove("detail-open");
     movieDetailEl.style.display = "none";
     movieDetailEl.classList.remove("expanded");
     movieGridEl.style.display = "grid";
@@ -309,12 +322,28 @@ function fillMovieDetail(data) {
 
   const body = document.getElementById("detail-overlay-body");
   if (body) {
-    const yr     = data.year   ? ` (${data.year})` : "";
-    const rating = data.rating ? `★ ${Number(data.rating).toFixed(1)}` : "";
+    const yr = data.year ? ` (${data.year})` : "";
     body.innerHTML = `
       <h2>${escHtml(data.title || "—")}${escHtml(yr)}</h2>
-      ${rating ? `<div class="detail-meta">${rating}</div>` : ""}
-      ${data.plot ? `<div class="detail-plot">${escHtml(data.plot)}</div>` : ""}`;
+      ${data.plot ? `<div class="detail-hero-synopsis">${escHtml(data.plot)}</div>` : ""}`;
+  }
+
+  const sideinfo = document.getElementById("detail-overlay-sideinfo");
+  if (sideinfo) {
+    const rating    = data.rating  ? `★ ${Number(data.rating).toFixed(1)}` : "";
+    const directors = (data.directors || []).map(d => typeof d === "string" ? d : d.name).filter(Boolean).join(", ");
+    const countries = (data.countries || []).join(", ");
+    const runtime   = data.runtime ? `${data.runtime} min` : "";
+    sideinfo.innerHTML = [
+      [runtime,    "Runtime"],
+      [directors,  "Director"],
+      [rating,     "Rating"],
+      [countries,  "Country"],
+    ].filter(([v]) => v).map(([v, label]) => `
+      <div class="hero-detail-item">
+        <span class="hero-detail-label">${label}</span>
+        <span class="hero-detail-value">${escHtml(v)}</span>
+      </div>`).join("");
   }
 
   // Info table
