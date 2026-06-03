@@ -283,7 +283,27 @@ body.detail-open .main-area {
   padding: 0;
   gap: 0;
 }
-body.detail-open .search-section { display: none; }
+body.detail-open .search-section {
+  position: absolute;
+  top: 1.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: calc(var(--max-w) - 2rem);
+  padding: 0;
+  z-index: 15;
+  box-sizing: border-box;
+  gap: 0;
+  background: transparent;
+}
+body.detail-open .search-section .examples { display: none; }
+body.detail-open #question-input {
+  color: rgba(255,255,255,0.9);
+  border-bottom-color: rgba(255,255,255,0.4);
+  caret-color: #fff;
+}
+body.detail-open #question-input::placeholder { color: rgba(255,255,255,0.3); }
+body.detail-open #question-input:focus       { border-bottom-color: rgba(255,255,255,0.88); }
 body.detail-open .output-view    { gap: 0; }
 
 /* ─── Movie detail card ───────────────────────────────────── */
@@ -536,6 +556,36 @@ body.detail-open .output-view    { gap: 0; }
 }
 .detail-links a:hover { color: var(--accent); }
 
+/* ─── Rating /5 denominator ──────────────────────────────── */
+.rating-denom {
+  font-size: 0.6em;
+  opacity: 0.45;
+  margin-left: 0.1em;
+  font-weight: 400;
+}
+
+/* ─── Themes tag section ──────────────────────────────────── */
+.themes-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.theme-tag {
+  border: 1px solid var(--border);
+  padding: 0.32rem 0.75rem;
+  font-size: 0.78rem;
+  font-family: var(--font);
+  color: var(--ink);
+  cursor: pointer;
+  background: transparent;
+  letter-spacing: 0.02em;
+  transition: border-color 0.15s, color 0.15s;
+}
+.theme-tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ─── Extra detail sections (cast, oscar, collection, similar) ─ */
 .detail-extra-section {
   background: var(--bg);
@@ -554,7 +604,8 @@ body.detail-open .output-view    { gap: 0; }
 #detail-cast-section,
 #detail-collection-section,
 #detail-similar-section,
-#detail-oscar-section {
+#detail-oscar-section,
+#detail-themes-section {
   padding-left: 0;
   padding-right: 0;
 }

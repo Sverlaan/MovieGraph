@@ -250,6 +250,7 @@ function renderMovieDetail(movie, onBack = null) {
     </div>
     <div class="detail-sections-wrap">
       <div class="detail-info-section" id="detail-info-section" style="display:none"></div>
+      <div id="detail-themes-section"     class="detail-extra-section" style="display:none"></div>
       <div id="detail-cast-section"       class="detail-extra-section" style="display:none"></div>
       <div id="detail-oscar-section"      class="detail-extra-section" style="display:none"></div>
       <div id="detail-collection-section" class="detail-extra-section" style="display:none"></div>
@@ -330,20 +331,16 @@ function fillMovieDetail(data) {
 
   const sideinfo = document.getElementById("detail-overlay-sideinfo");
   if (sideinfo) {
-    const rating    = data.rating  ? `★ ${Number(data.rating).toFixed(1)}` : "";
+    const ratingVal = data.rating ? Number(data.rating).toFixed(1) : "";
     const directors = (data.directors || []).map(d => typeof d === "string" ? d : d.name).filter(Boolean).join(", ");
-    const countries = (data.countries || []).join(", ");
+    const country   = (data.countries || [])[0] || "";
     const runtime   = data.runtime ? `${data.runtime} min` : "";
-    sideinfo.innerHTML = [
-      [runtime,    "Runtime"],
-      [directors,  "Director"],
-      [rating,     "Rating"],
-      [countries,  "Country"],
-    ].filter(([v]) => v).map(([v, label]) => `
-      <div class="hero-detail-item">
-        <span class="hero-detail-label">${label}</span>
-        <span class="hero-detail-value">${escHtml(v)}</span>
-      </div>`).join("");
+    const rows = [];
+    if (runtime)   rows.push(`<div class="hero-detail-item"><span class="hero-detail-label">Runtime</span><span class="hero-detail-value">${escHtml(runtime)}</span></div>`);
+    if (directors) rows.push(`<div class="hero-detail-item"><span class="hero-detail-label">Director</span><span class="hero-detail-value">${escHtml(directors)}</span></div>`);
+    if (ratingVal) rows.push(`<div class="hero-detail-item"><span class="hero-detail-label">Rating</span><span class="hero-detail-value">★ ${escHtml(ratingVal)}<span class="rating-denom">/5</span></span></div>`);
+    if (country)   rows.push(`<div class="hero-detail-item"><span class="hero-detail-label">Country</span><span class="hero-detail-value">${escHtml(country)}</span></div>`);
+    sideinfo.innerHTML = rows.join("");
   }
 
   // Info table
@@ -361,7 +358,6 @@ function fillMovieDetail(data) {
         ${infoRowClickable("Countries",  data.countries || [],                   country => `Movies from ${country}`)}
         ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang    => `Movies in ${lang}`)}
         ${infoRowClickable("Genres",     data.genres || [],                      genre   => `Movies in the ${genre} genre`)}
-        ${infoRowClickable("Themes",     data.mini_themes || [],                 theme   => `Movies with mini-theme ${theme}`)}
         ${infoRowLinks("Links", linkItems)}
       </div>`;
     section.addEventListener("click", e => {
@@ -372,6 +368,27 @@ function fillMovieDetail(data) {
     });
     section.style.display = "";
     section.classList.add("card-reveal");
+  }
+
+  // Themes
+  const themes = (data.mini_themes || []).filter(Boolean);
+  if (themes.length) {
+    const themesSection = document.getElementById("detail-themes-section");
+    if (themesSection) {
+      themesSection.innerHTML = `
+        <div class="detail-section-label">Themes</div>
+        <div class="themes-tags">
+          ${themes.map(t => `<span class="theme-tag" data-query="${escHtml(`Movies with mini-theme ${t}`)}">${escHtml(t)}</span>`).join("")}
+        </div>`;
+      themesSection.addEventListener("click", e => {
+        const tag = e.target.closest("[data-query]");
+        if (!tag) return;
+        inputEl.value = tag.dataset.query;
+        submitQuestion();
+      });
+      themesSection.style.display = "";
+      themesSection.classList.add("card-reveal");
+    }
   }
 
   // Cast & Crew banner row: directors first, then cast, then other crew
