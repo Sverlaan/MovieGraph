@@ -353,10 +353,9 @@ function fillMovieDetail(data) {
     if (data.trailer_url)    linkItems.push({ text: "YouTube",     url: data.trailer_url });
     section.innerHTML = `
       <div class="detail-info-left">
-        ${infoRow("Runtime",    data.runtime ? `${data.runtime} minutes` : "")}
-        ${infoRowClickable("Director",   (data.directors || []).map(d => typeof d === "string" ? d : d.name).filter(Boolean), name => `Movies directed by ${name}`)}
         ${infoRowClickable("Countries",  data.countries || [],                   country => `Movies from ${country}`)}
         ${infoRowClickable("Languages",  (data.languages || []).filter(Boolean), lang    => `Movies in ${lang}`)}
+        ${infoRowClickable("Studios",    (data.studios   || []).filter(Boolean), studio  => `Movies produced by ${studio}`)}
         ${infoRowClickable("Genres",     data.genres || [],                      genre   => `Movies in the ${genre} genre`)}
         ${infoRowLinks("Links", linkItems)}
       </div>`;

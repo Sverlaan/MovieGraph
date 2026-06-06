@@ -286,18 +286,20 @@ body.detail-open .main-area {
 body.detail-open .search-section {
   position: absolute;
   top: 1.6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 2rem);
-  max-width: calc(var(--max-w) - 2rem);
+  left: 6.5rem;
+  width: 20rem;
   padding: 0;
   z-index: 15;
   box-sizing: border-box;
   gap: 0;
   background: transparent;
 }
+body.detail-open .detail-back-btn { top: 1.6rem; }
 body.detail-open .search-section .examples { display: none; }
 body.detail-open #question-input {
+  font-size: 1rem;
+  font-weight: 400;
+  padding: 0.2rem 0 0.3rem;
   color: rgba(255,255,255,0.9);
   border-bottom-color: rgba(255,255,255,0.4);
   caret-color: #fff;

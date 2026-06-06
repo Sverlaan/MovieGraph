@@ -71,6 +71,7 @@ RETURN
   directors, cast, crew,
   [(m)-[:PRODUCED_IN]->(co:Country) | co.name] AS countries,
   [(m)-[:SPOKEN_IN]->(l:Language) | l.english_name] AS languages,
+  [(m)-[:PRODUCED_BY]->(s:Studio) | s.name] AS studios,
   [(m)-[:HAS_GENRE]->(g:Genre) | g.name] AS genres,
   [(m)-[:HAS_MINI_THEME]->(t:MiniTheme) | t.name] AS mini_themes,
   oscar_noms, collection_name, collection_movies
